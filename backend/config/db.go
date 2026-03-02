@@ -1,19 +1,50 @@
 package config
+
 import (
-	"context"
+	"fmt"
 	"log"
 	"os"
-	"github.com/jackc/pgx/v5/pgxpool"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-var DB *pgxpool.Pool
-func ConnectDB() {
-	dbURL := os.Getenv("DB_URL")
+var DB *gorm.DB
 
-	pool ,err := pgxpool.New(context.Background(),dbURL)
+func ConnectDB() {
+
+	host := os.Getenv("DB_HOST")
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	port := os.Getenv("DB_PORT")
+	dbname := os.Getenv("DB_NAME")
+
+	// First connect to default "postgres" database
+	dsnWithoutDB := fmt.Sprintf(
+		"host=%s user=%s password=%s port=%s sslmode=disable",
+		host, user, password, port,
+	)
+
+	tempDB, err := gorm.Open(postgres.Open(dsnWithoutDB), &gorm.Config{})
 	if err != nil {
-		log.Fatal("Unable to connect to database: ",err)
+		log.Fatal("Failed to connect to PostgreSQL:", err)
 	}
-	DB = pool
-	log.println("PostgreSQL connected")
+
+	// Create database if not exists
+	tempDB.Exec("CREATE DATABASE " + dbname)
+
+	log.Println("Database checked/created successfully")
+
+	// Now connect to actual database
+	dsn := fmt.Sprintf(
+		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+		host, user, password, dbname, port,
+	)
+
+	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatal("Failed to connect to target DB:", err)
+	}
+
+	log.Println("Connected to database:", dbname)
 }
