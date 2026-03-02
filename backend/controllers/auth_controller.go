@@ -41,6 +41,13 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid password"})
 		return
 	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "Login successful"})
+	token := "dummy-token"
+	c.JSON(http.StatusOK, gin.H{
+    "user": gin.H{
+        "id":    user.ID,
+        "email": user.Email,
+        "role":  user.Role,
+    },
+    "token": token,
+})
 }

@@ -16,7 +16,7 @@ export default function Landing() {
       </p>
 
       <div className="mt-8">
-        <Button onClick={() => navigate("/login")}>
+        <Button onClick={() => navigate("/register")}>
           Get Started
         </Button>
       </div>
