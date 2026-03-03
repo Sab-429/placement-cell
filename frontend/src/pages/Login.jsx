@@ -27,17 +27,11 @@ export default function Login() {
       password: "",
     },
   });
-  useEffect(() => {
-    if (user) {
-      redirectUser(user.role);
-    }
-  }, [user]);
-
   const redirectUser = (role) => {
     const routes = {
-      student: "//student/Dashboard",
-      recruiter: "/recruiter/Dashboard",
-      admin: "/admin/Dashboard",
+      student: "/student/dashboard",
+      recruiter: "/recruiter/dashboard",
+      admin: "/admin/dashboard",
     };
 
     navigate(routes[role] || "/");

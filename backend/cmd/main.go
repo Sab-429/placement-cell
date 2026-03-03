@@ -43,9 +43,7 @@ routes.SetupRoutes(router)
 	if port == "" {
 		port = "8000"
 	}
-
 	log.Println("Server running on port", port)
-
 	if err := router.Run(":" + port); err != nil {
 		log.Fatal("Failed to start server:", err)
 	}

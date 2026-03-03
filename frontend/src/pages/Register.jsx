@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { registerUser } from "../api/authApi";
-import useAuth from "../hooks/useAuth";
-
 import {
   Form,
   FormField,
@@ -21,7 +19,7 @@ export default function Register() {
     defaultValues: {
       email: "",
       password: "",
-      role: "student",
+      role: "",
     },
   });
   const navigate = useNavigate();
@@ -41,8 +39,8 @@ export default function Register() {
     setLoading(true);
 
     try {
-        await registerUser(data);
-        navigate("/login")
+      await registerUser(data);
+      navigate("/login");
     } catch (err) {
       form.setError("email", {
         type: "manual",
@@ -56,7 +54,6 @@ export default function Register() {
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-lg space-y-6">
-
         <div className="text-center">
           <h1 className="text-3xl font-bold">Create Account</h1>
           <p className="text-gray-500 mt-2">Join Placement Portal</p>
@@ -64,7 +61,6 @@ export default function Register() {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-
             <FormField
               control={form.control}
               name="email"
@@ -88,7 +84,11 @@ export default function Register() {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="Enter password" {...field} />
+                    <Input
+                      type="password"
+                      placeholder="Enter password"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -102,10 +102,7 @@ export default function Register() {
                 <FormItem>
                   <FormLabel>Register As</FormLabel>
                   <FormControl>
-                    <select
-                      {...field}
-                      className="w-full p-2 border rounded-md"
-                    >
+                    <select {...field} className="w-full p-2 border rounded-md">
                       <option value="student">Student</option>
                       <option value="recruiter">Recruiter</option>
                       <option value="admin">Admin</option>
@@ -119,10 +116,14 @@ export default function Register() {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Creating Account..." : "Register"}
             </Button>
-
+            <p>
+              Already have account?{" "}
+              <Link to="/login" className="text-blue-600 hover:text-blue-800">
+                Login
+              </Link>
+            </p>
           </form>
         </Form>
-
       </div>
     </div>
   );
