@@ -1,3 +1,4 @@
+"use client";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
@@ -13,13 +14,14 @@ import {
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export default function Register() {
   const form = useForm({
     defaultValues: {
       email: "",
       password: "",
-      role: "",
+      role: "student",
     },
   });
   const navigate = useNavigate();
@@ -40,11 +42,17 @@ export default function Register() {
 
     try {
       await registerUser(data);
-      navigate("/login");
+
+      toast.success(`You successfully registered as ${data.role}`);
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
     } catch (err) {
+      const message = err.message || "Registration failed";
+      toast.error(message);
       form.setError("email", {
         type: "manual",
-        message: "Registration failed. Try different email.",
+        message: message,
       });
     } finally {
       setLoading(false);
