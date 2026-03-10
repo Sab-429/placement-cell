@@ -1,10 +1,10 @@
 package config
 
 import (
+	"backend/models"
 	"fmt"
 	"log"
 	"os"
-
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -39,4 +39,11 @@ func ConnectDB() {
 		log.Fatal("Failed to connect to target DB:", err)
 	}
 	log.Println("Connected to database:", dbname)
+}
+
+func Migrate(db * gorm.DB) {
+	db.AutoMigrate(
+		&models.User{},
+		&models.Student{},
+	)
 }

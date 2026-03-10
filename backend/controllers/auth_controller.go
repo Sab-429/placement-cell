@@ -3,6 +3,7 @@ package controllers
 import (
 	"backend/config"
 	"backend/models"
+	"backend/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -63,7 +64,11 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	token := "dummy-token"
+	token, err := utils.GenerateJWT(user.ID, user.Email, user.Role)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"user": gin.H{
