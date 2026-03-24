@@ -24,17 +24,6 @@ func ConnectDB() {
 	if err != nil {
 		log.Fatalf("database connection failed: %v", err)
 	}
-<<<<<<< HEAD
-	log.Println("Connected to database:", dbname)
-}
-
-func Migrate(db * gorm.DB) {
-	db.AutoMigrate(
-		&models.User{},
-		&models.Student{},
-	)
-}
-=======
 	err = db.AutoMigrate(
 		&models.Student{},
 		&models.Recruiter{},
@@ -48,4 +37,3 @@ func Migrate(db * gorm.DB) {
 	DB = db
 	log.Println("database connected and migrated successfully")
 }
->>>>>>> 09dcb07 (JWT token authentication)

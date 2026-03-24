@@ -10,45 +10,6 @@ import (
 func Auth(allowedRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		header := c.GetHeader("Authorization")
-<<<<<<< HEAD
-
-		if header == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "No token"})
-			c.Abort()
-			return
-		}
-
-		parts := strings.Split(header, " ")
-
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization format"})
-			c.Abort()
-			return
-		}
-
-		tokenString := parts[1]
-
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, jwt.ErrTokenInvalidClaims
-			}
-
-			return []byte(os.Getenv("JWT_SECRET")), nil
-		})
-
-		if err != nil || !token.Valid {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
-			c.Abort()
-			return
-		}
-
-		claims := token.Claims.(jwt.MapClaims)
-		c.Set("user_id",uint(claims["user_id"].(float64)))
-		c.Set("email", claims["email"])
-		c.Set("role", claims["role"])
-
-=======
 		if header == "" || !strings.HasPrefix(header, "Bearer ") {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing token"})
 			return
@@ -75,7 +36,6 @@ func Auth(allowedRoles ...string) gin.HandlerFunc {
 		}
 		c.Set("user_id", claims.UserID)
 		c.Set("role", claims.Role)
->>>>>>> 09dcb07 (JWT token authentication)
 		c.Next()
 	}
 }
