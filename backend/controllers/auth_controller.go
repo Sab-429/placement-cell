@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 package controllers
 
 import (
@@ -79,3 +80,5 @@ func Login(c *gin.Context) {
 		"token": token,
 	})
 }
+=======
+>>>>>>> 09dcb07 (JWT token authentication)
