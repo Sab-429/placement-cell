@@ -7,18 +7,20 @@ import (
 
 	"gorm.io/gorm"
 )
+
 type StringArray []string
 
 func (s StringArray) Value() (driver.Value, error) {
 	b, err := json.Marshal(s)
 	return string(b), err
 }
+
 func (s *StringArray) Scan(value interface{}) error {
 	b, ok := value.([]byte)
 	if !ok {
 		return errors.New("StringArray: type assertion to []byte failed")
 	}
-	return json.Unmarshal(b, s)
+	return json.Unmarshal(b,s)
 }
 
 type JSONB map[string]interface{}
@@ -27,20 +29,23 @@ func (j JSONB) Value() (driver.Value, error) {
 	b, err := json.Marshal(j)
 	return string(b), err
 }
+
 func (j *JSONB) Scan(value interface{}) error {
 	b, ok := value.([]byte)
 	if !ok {
 		return errors.New("JSONB: type assertion to []byte failed")
 	}
-	return json.Unmarshal(b, j)
+	return json.Unmarshal(b,j)
 }
+
+//student model section
 
 type Student struct {
 	gorm.Model
 	Role           string      `gorm:"default:'student'"       json:"role"`
 	Name           string      `                               json:"name"`
 	Email          string      `gorm:"uniqueIndex"             json:"email"`
-	PasswordHash   string      `                               json:"-"` 
+	PasswordHash   string      `                               json:"-"` // never sent in JSON responses
 	About          string      `                               json:"about"`
 	Branch         string      `                               json:"branch"`
 	CGPA           float64     `                               json:"cgpa"`
@@ -55,6 +60,7 @@ type Student struct {
 	Certificates   JSONB       `gorm:"type:jsonb"              json:"certificates"`
 }
 
+//Recruiter model section
 type Recruiter struct {
 	gorm.Model
 	Role         string `gorm:"default:'recruiter'" json:"role"`
@@ -66,6 +72,7 @@ type Recruiter struct {
 	NumEmployees int    `                           json:"num_employees"`
 	LogoFileName string `                           json:"logo_file_name"`
 }
+//Admin section model
 
 type Admin struct {
 	gorm.Model

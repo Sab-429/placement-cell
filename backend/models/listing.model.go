@@ -4,7 +4,6 @@ import (
 	"time"
 	"gorm.io/gorm"
 )
-
 type Listing struct {
 	gorm.Model
 	Title           string      `json:"title"`
