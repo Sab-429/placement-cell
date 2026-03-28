@@ -18,8 +18,8 @@ func SetUpRoutes(r *gin.Engine) {
 		auth.POST("/recruiter/login",    controllers.LoginRecruiter)
 		auth.POST("/admin/login",        controllers.LoginAdmin)
 	}
-	api.GET("/listings",    controllers.GetAllListings)
+	api.GET("/listings",    controllers.GetAllListing)
 	api.GET("/listings/:id", controllers.GetOneListing)
-	api.GET("/recruiters",  controllers.GetAllRecruiters)
+	api.GET("/recruiters",  controllers.GetAllRecruiter)
 	api.GET("/recruiters/:id", controllers.GetRecruiterProfile)
 }

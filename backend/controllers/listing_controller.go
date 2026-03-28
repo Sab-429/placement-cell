@@ -107,11 +107,16 @@ func ApplyToListing(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error":"listing not available"})
 		return 
 	}
+	
 	app := models.Application {
 		StudentID: studentID.(uint),
 		ListingID: uint(listingID),
 		Status: "applied",
 	}
+	if err := config.DB.Create(&app).Error; err != nil {
+	c.JSON(http.StatusInternalServerError, gin.H{"error":"failed to apply"})
+	return
+}
 	config.DB.Create(&app)
 	config.DB.Model(&listing).UpdateColumn("applications_num",listing.ApplicationsNum + 1)
 	c.JSON(http.StatusCreated, app)
