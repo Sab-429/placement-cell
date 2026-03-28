@@ -2,6 +2,7 @@ package routes
 
 import (
 	"backend/controllers"
+	"backend/middlewares"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,4 +23,42 @@ func SetUpRoutes(r *gin.Engine) {
 	api.GET("/listings/:id", controllers.GetOneListing)
 	api.GET("/recruiters",  controllers.GetAllRecruiter)
 	api.GET("/recruiters/:id", controllers.GetRecruiterProfile)
+
+	//----student route
+	student := api.Group("/", middlewares.Auth("student"))
+	{
+		student.GET("/students/:id",                   controllers.GetStudentProfile)
+		student.PUT("/students/:id",                   controllers.UpdateStudentProfile)
+		student.POST("/students/:id/pfp",              controllers.UploadPFP)
+		student.POST("/students/:id/resume",           controllers.UploadResume)
+		student.POST("/students/:id/resume/generate",  controllers.GenerateResume)
+		student.GET("/students/:id/resume/download",   controllers.DownloadResume)
+		student.GET("/applications",                   controllers.GetMyApplications)
+		student.GET("/listings/:id/status",            controllers.GetApplicationStatus)
+		student.POST("/listings/:id/apply",            controllers.ApplyToListing)
+	}
+
+	//-----Recruiter route
+	recruiter := api.Group("/", middlewares.Auth("recruiter"))
+	{
+		recruiter.PUT("/recruiters/:id",                    controllers.UpdateRecruiterProfile)
+		recruiter.POST("/recruiters/:id/logo",              controllers.UploadLogo)
+		recruiter.GET("/students",                          controllers.GetAllStudents)
+		recruiter.GET("/students/:id",                      controllers.GetStudentProfile)
+		recruiter.POST("/listings",                         controllers.CreateListing)
+		recruiter.PUT("/listings/:id",                      controllers.UpdateListing)
+		recruiter.GET("/listings/:id/applications",         controllers.GetApplicationsForListing)
+		recruiter.PUT("/applications/:id/status",           controllers.UpdateApplicationStatus)
+	}
+	//------admin route
+	admin := api.Group("/admin", middlewares.Auth("admin"))
+	{
+		admin.GET("/students",          controllers.AdminGetStudents)
+		admin.DELETE("/students/:id",   controllers.AdminDeleteStudent)
+		admin.GET("/recruiters",        controllers.AdminGetRecruiters)
+		admin.DELETE("/recruiters/:id", controllers.AdminDeleteRecruiter)
+		admin.DELETE("/listings/:id",   controllers.AdminDeleteListing)
+		admin.GET("/metrics",           controllers.AdminGetMetrics)
+		admin.GET("/health",            controllers.AdminHealthCheck)
+	}
 }
