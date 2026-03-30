@@ -127,7 +127,9 @@ func GenerateResume(c *gin.Context) {
 	c.JSON(http.StatusAccepted, gin.H{"message": "resume generation queued"})
 }
 
-func pushResumeTask(u uint) any {
-	return nil
+func pushResumeTask(userID uint) error {
+	return queueClient.Push(map[string]interface{}{
+		"task":    "gen_resume",
+		"user_id": userID,
+	})
 }
-
