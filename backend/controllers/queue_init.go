@@ -1,5 +1,6 @@
 package controllers
 
+
 import (
 	"context"
 	"encoding/json"
@@ -11,7 +12,7 @@ import (
 
 const workerQueueKey = "tasks:worker"
 
-type redisQueueKey struct {
+type redisQueue struct {
 	client *redis.Client
 }
 
