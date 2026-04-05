@@ -3,7 +3,7 @@ package models
 import (
 	"database/sql/driver"
 	"encoding/json"
-	"errors"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -11,31 +11,56 @@ import (
 type StringArray []string
 
 func (s StringArray) Value() (driver.Value, error) {
+	if s == nil {
+		return nil, nil
+	}
 	b, err := json.Marshal(s)
 	return string(b), err
 }
 
 func (s *StringArray) Scan(value interface{}) error {
-	b, ok := value.([]byte)
-	if !ok {
-		return errors.New("StringArray: type assertion to []byte failed")
+	if value == nil {
+		*s = StringArray{}
+		return nil
 	}
-	return json.Unmarshal(b,s)
+	var bytes []byte
+	switch v := value.(type) {
+	case []byte:
+		bytes = v
+	case string:
+		bytes = []byte(v)
+	default:
+		return fmt.Errorf("StringArray: cannot scan type %T", value)
+	}
+	return json.Unmarshal(bytes, s)
 }
 
 type JSONB map[string]interface{}
 
 func (j JSONB) Value() (driver.Value, error) {
+	if j == nil {
+		return nil, nil
+	}
 	b, err := json.Marshal(j)
 	return string(b), err
 }
 
 func (j *JSONB) Scan(value interface{}) error {
-	b, ok := value.([]byte)
-	if !ok {
-		return errors.New("JSONB: type assertion to []byte failed")
+	if value == nil {
+		*j = JSONB{}
+		return nil
 	}
-	return json.Unmarshal(b,j)
+
+	var bytes []byte
+	switch v := value.(type) {
+	case []byte:
+		bytes = v
+	case string:
+		bytes = []byte(v)
+	default:
+		return fmt.Errorf("JSONB: cannot scan %T", value)
+	}
+	return json.Unmarshal(bytes,j)
 }
 
 //student model section
@@ -60,7 +85,7 @@ type Student struct {
 	Certificates   JSONB       `gorm:"type:jsonb"              json:"certificates"`
 }
 
-//Recruiter model section
+// Recruiter model section
 type Recruiter struct {
 	gorm.Model
 	Role         string `gorm:"default:'recruiter'" json:"role"`
@@ -72,6 +97,7 @@ type Recruiter struct {
 	NumEmployees int    `                           json:"num_employees"`
 	LogoFileName string `                           json:"logo_file_name"`
 }
+
 //Admin section model
 
 type Admin struct {

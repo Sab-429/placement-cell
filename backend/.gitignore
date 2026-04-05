@@ -1,12 +1,32 @@
-# Environment variables
-.env*
+# Environment
+.env.global
+.env
+*.env
 
-# Go build files
-bin/
-vendor/
+# Go
+backend/bin/
+backend/tmp/
 *.exe
-*.out
+*.test
 
-# OS files
+# Python
+worker/__pycache__/
+worker/venv/
+worker/*.pyc
+worker/.pytest_cache/
+
+# Node / React
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+
+# Storage (runtime files — not source code)
+storage/
+
+# OS
 .DS_Store
 Thumbs.db
+
+# IDE
+.vscode/settings.json
+.idea/

@@ -1,11 +1,13 @@
 package middlewares
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
-	"github.com/gin-gonic/gin"
 	"backend/utils"
+
+	"github.com/gin-gonic/gin"
 )
 func Auth(allowedRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -18,9 +20,12 @@ func Auth(allowedRoles ...string) gin.HandlerFunc {
 		tokenStr := strings.TrimPrefix(header, "Bearer ")
 		claims, err := utils.ParseToken(tokenStr)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid or expired token"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
+
+		fmt.Printf("Rec tok: %s len: %d\n", tokenStr, len(tokenStr))
+
 		if len(allowedRoles) > 0 {
 			allowed := false
 			for _, r := range allowedRoles {

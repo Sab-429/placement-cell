@@ -38,7 +38,7 @@ func RegisterStudent(c *gin.Context) {
 	}
 	token, err := utils.GenerateToken(student.ID, "student")
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "token generated failed"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return 
 	}
 	c.JSON(http.StatusCreated, gin.H {
@@ -94,7 +94,7 @@ func LoginStudent(c *gin.Context) {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 		}else{
-			c.JSON(http.StatusInternalServerError,gin.H{"error": "database error"})
+			c.JSON(http.StatusInternalServerError,gin.H{"error": err.Error()})
 		}
 		return
 	}

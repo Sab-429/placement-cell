@@ -25,7 +25,7 @@ func SetUpRoutes(r *gin.Engine) {
 	api.GET("/recruiters/:id", controllers.GetRecruiterProfile)
 
 	//----student route
-	student := api.Group("/", middlewares.Auth("student"))
+	student := api.Group("/student", middlewares.Auth("student"))
 	{
 		student.GET("/students/:id",                   controllers.GetStudentProfile)
 		student.PUT("/students/:id",                   controllers.UpdateStudentProfile)
@@ -39,8 +39,9 @@ func SetUpRoutes(r *gin.Engine) {
 	}
 
 	//-----Recruiter route
-	recruiter := api.Group("/", middlewares.Auth("recruiter"))
+	recruiter := api.Group("/recruiter", middlewares.Auth("recruiter"))
 	{
+		recruiter.GET("/recruiters/:id"	,					controllers.GetRecruiterProfile)
 		recruiter.PUT("/recruiters/:id",                    controllers.UpdateRecruiterProfile)
 		recruiter.POST("/recruiters/:id/logo",              controllers.UploadLogo)
 		recruiter.GET("/students",                          controllers.GetAllStudents)
