@@ -1,138 +1,215 @@
-"use client";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
-import { registerUser } from "../api/authApi";
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { toast } from 'sonner'
+import { Briefcase, GraduationCap, Users, Eye, EyeOff, CheckCircle2 } from 'lucide-react'
 
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { Button } from '@/components/ui/button'
+import { Input }  from '@/components/ui/input'
+import { Label }  from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
+
+import client from '../api/client'
+import useAuthStore from '../store/authStore'
+
+const schema = z.object({
+  name:     z.string().min(2, 'Name must be at least 2 characters'),
+  email:    z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+})
+
+const ROLES = [
+  {
+    id: 'student', label: 'Student', icon: GraduationCap,
+    perks: ['Browse job listings', 'Apply to companies', 'Generate resume', 'Track applications'],
+  },
+  {
+    id: 'recruiter', label: 'Recruiter', icon: Users,
+    perks: ['Post job listings', 'View applicants', 'Manage hiring', 'Access talent pool'],
+  },
+]
 
 export default function Register() {
-  const form = useForm({
-    defaultValues: {
-      email: "",
-      password: "",
-      role: "student",
-    },
-  });
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  const [role, setRole]         = useState('student')
+  const [showPass, setShowPass] = useState(false)
+  const { login }               = useAuthStore()
+  const navigate                = useNavigate()
 
-  const redirectUser = (role) => {
-    const routes = {
-      student: "/student/dashboard",
-      recruiter: "/recruiter/dashboard",
-      admin: "/admin/dashboard",
-    };
-
-    navigate(routes[role] || "/");
-  };
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
+    resolver: zodResolver(schema),
+  })
 
   const onSubmit = async (data) => {
-    setLoading(true);
-
     try {
-      await registerUser(data);
-
-      toast.success(`You successfully registered as ${data.role}`);
-      setTimeout(() => {
-        navigate("/login");
-      }, 2000);
+      const res = await client.post(`/auth/${role}/register`, { ...data, role })
+      login(res.data.token, role, res.data.user_id)
+      toast.success('Account created successfully!')
+      navigate(`/${role}/dashboard`, { replace: true })
     } catch (err) {
-      const message = err.message || "Registration failed";
-      toast.error(message);
-      form.setError("email", {
-        type: "manual",
-        message: message,
-      });
-    } finally {
-      setLoading(false);
+      toast.error(err.response?.data?.error || 'Registration failed')
     }
-  };
+  }
+
+  const selectedRole = ROLES.find(r => r.id === role)
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-lg space-y-6">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold">Create Account</h1>
-          <p className="text-gray-500 mt-2">Join Placement Portal</p>
+    <div className="min-h-screen flex">
+
+      {/* Left panel */}
+      <div className="hidden lg:flex lg:w-1/2 bg-primary flex-col justify-between p-12 text-primary-foreground">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-primary-foreground/20 rounded-xl flex items-center justify-center">
+            <Briefcase className="w-5 h-5" />
+          </div>
+          <span className="font-bold text-xl">PlacementPortal</span>
         </div>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              rules={{ required: "Email is required" }}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input type="email" placeholder="Enter email" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <div>
+          <h1 className="text-4xl font-bold leading-tight mb-4">
+            Join thousands of students & recruiters
+          </h1>
+          <p className="text-primary-foreground/70 text-lg mb-8">
+            Create your account and start your placement journey today.
+          </p>
 
-            <FormField
-              control={form.control}
-              name="password"
-              rules={{ required: "Password is required" }}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
+          {/* Dynamic perks based on role */}
+          <div className="space-y-3">
+            {selectedRole?.perks.map((perk) => (
+              <div key={perk} className="flex items-center gap-3">
+                <CheckCircle2 className="w-5 h-5 text-primary-foreground/70 flex-shrink-0" />
+                <span className="text-primary-foreground/80">{perk}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <p className="text-primary-foreground/50 text-sm">
+          © 2025 PlacementPortal. All rights reserved.
+        </p>
+      </div>
+
+      {/* Right panel */}
+      <div className="flex-1 flex items-center justify-center p-6 bg-muted/30">
+        <div className="w-full max-w-md">
+
+          <div className="lg:hidden flex items-center gap-2 mb-8 justify-center">
+            <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center">
+              <Briefcase className="w-4 h-4 text-primary-foreground" />
+            </div>
+            <span className="font-bold text-xl">PlacementPortal</span>
+          </div>
+
+          <Card className="shadow-lg border-0">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-2xl">Create account</CardTitle>
+              <CardDescription>Choose your role to get started</CardDescription>
+            </CardHeader>
+
+            <CardContent className="space-y-5">
+
+              {/* Role selector */}
+              <div className="grid grid-cols-2 gap-3">
+                {ROLES.map(({ id, label, icon: Icon }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setRole(id)}
+                    className={cn(
+                      'flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left',
+                      role === id
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:border-primary/40'
+                    )}
+                  >
+                    <div className={cn(
+                      'w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0',
+                      role === id ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                    )}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className={cn('font-semibold text-sm', role === id ? 'text-primary' : '')}>
+                        {label}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {id === 'student' ? 'Job seeker' : 'Hiring'}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="name">Full name</Label>
+                  <Input
+                    id="name"
+                    placeholder="Rahul Kumar"
+                    {...register('name')}
+                    className={errors.name ? 'border-destructive' : ''}
+                  />
+                  {errors.name && (
+                    <p className="text-xs text-destructive">{errors.name.message}</p>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@college.edu"
+                    {...register('email')}
+                    className={errors.email ? 'border-destructive' : ''}
+                  />
+                  {errors.email && (
+                    <p className="text-xs text-destructive">{errors.email.message}</p>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="password">Password</Label>
+                  <div className="relative">
                     <Input
-                      type="password"
-                      placeholder="Enter password"
-                      {...field}
+                      id="password"
+                      type={showPass ? 'text' : 'password'}
+                      placeholder="Min 6 characters"
+                      {...register('password')}
+                      className={cn('pr-10', errors.password ? 'border-destructive' : '')}
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <button
+                      type="button"
+                      onClick={() => setShowPass(!showPass)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  {errors.password && (
+                    <p className="text-xs text-destructive">{errors.password.message}</p>
+                  )}
+                </div>
 
-            <FormField
-              control={form.control}
-              name="role"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Register As</FormLabel>
-                  <FormControl>
-                    <select {...field} className="w-full p-2 border rounded-md">
-                      <option value="student">Student</option>
-                      <option value="recruiter">Recruiter</option>
-                      <option value="admin">Admin</option>
-                    </select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? 'Creating account...' : 'Create account'}
+                </Button>
+              </form>
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Creating Account..." : "Register"}
-            </Button>
-            <p>
-              Already have account?{" "}
-              <Link to="/login" className="text-blue-600 hover:text-blue-800">
-                Login
-              </Link>
-            </p>
-          </form>
-        </Form>
+              <p className="text-center text-sm text-muted-foreground">
+                Already have an account?{' '}
+                <Link to="/login" className="text-primary font-medium hover:underline">
+                  Sign in
+                </Link>
+              </p>
+
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
-  );
+  )
 }
