@@ -1,7 +1,21 @@
-import client from "@/api/client"
-import useAuthStore from "@/store/authStore"
-import { useEffect, useState } from "react"
-import { toast } from "sonner"
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { toast } from 'sonner'
+import {
+  Briefcase, FileText, TrendingUp,
+  CheckCircle, XCircle, Clock, Star,
+  ArrowRight, Download, RefreshCw
+} from 'lucide-react'
+
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Button }      from '@/components/ui/button'
+import { Badge }       from '@/components/ui/badge'
+import { Separator }   from '@/components/ui/separator'
+import StatusBadge     from '@/components/StatusBadge'
+import Navbar          from '@/components/Navbar'
+
+import client      from '../../api/client'
+import useAuthStore from '../../store/authStore'
 
 export default function StudentDashboard() {
   const {userId} = useAuthStore()
