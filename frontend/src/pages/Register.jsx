@@ -43,7 +43,7 @@ export default function Register() {
 
     const onSubmit = async (data) => {
         try {
-            const res = await client.post(`/auth/${role}/resister`, { ...data, role })
+            const res = await client.post(`/auth/${role}/register`, { ...data, role })
             login(res.data.token, role, res.data.user_id)
             toast.success('Account created')
             navigate(`/${role}/dashboard`, { replace: true })
