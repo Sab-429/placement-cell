@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import z from "zod";
+import { z } from "zod";
 import { Button }   from '@/components/ui/button'
 import { Input }    from '@/components/ui/input'
 import { Label }    from '@/components/ui/label'
@@ -29,7 +29,7 @@ export default function Login() {
     const { login } = useAuthStore()
     const navigate = useNavigate()
 
-    const { register, handlesubmit, formState: { errors, isSubmitting } } = useForm({
+    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
         resolver: zodResolver(schema),
     })
 
@@ -124,7 +124,7 @@ export default function Login() {
                             </div>
 
                             {/* Form */}
-                            <form onSubmit={handlesubmit(onSubmit)} className="space-y-4">
+                            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                                 <div className="space-y-1.5">
                                     <Label htmlFor="email">Email</Label>
                                     <Input

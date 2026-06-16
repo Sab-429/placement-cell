@@ -1,4 +1,3 @@
-import useAuthStore from '@/store/authStore'
 import { Briefcase, GraduationCap, Users, Eye, EyeOff, CheckCircle2 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
@@ -34,7 +33,6 @@ const ROLES = [
 export default function Register() {
     const [role, setRole] = useState('student')
     const [showPass, setShowPass] = useState(false)
-    const { login } = useAuthStore()
     const navigate = useNavigate()
 
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
@@ -43,10 +41,9 @@ export default function Register() {
 
     const onSubmit = async (data) => {
         try {
-            const res = await client.post(`/auth/${role}/register`, { ...data, role })
-            login(res.data.token, role, res.data.user_id)
+            await client.post(`/auth/${role}/register`, { ...data, role })
             toast.success('Account created')
-            navigate(`/${role}/dashboard`, { replace: true })
+            navigate(`/login`, { replace: true })
         } catch (err) {
             toast.error(err.response?.data?.error || 'Registration failed')
         }
