@@ -2,11 +2,12 @@ import client from "@/api/client";
 import useAuthStore from "@/store/authStore";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import {
-   Briefcase, FileText, TrendingUp,
-   CheckCircle, XCircle, Clock, Star,
-   ArrowRight, Download, RefreshCw
-} from 'lucide-react'
+import { Button }      from '@/components/ui/button'
+import { Separator }   from '@/components/ui/separator'
+import StatusBadge     from '@/components/StatusBadge'
+import { Link } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import {Briefcase,CheckCircle, XCircle, Clock, Star,ArrowRight, Download, RefreshCw } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 
 export default function StudentDashboard() {
@@ -168,7 +169,7 @@ export default function StudentDashboard() {
                            { label: 'Work experience', done: !!profile?.work_experience?.length },
                         ].map(({ label, done }) => (
                            <div key={label} className="flex items-center gap-3">
-                              <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0
+                              <div className={`w-5 h-5 rounded-full flex items-center justify-center
                       ${done ? 'bg-green-100' : 'bg-muted'}`}>
                                  {done
                                     ? <CheckCircle className="w-3.5 h-3.5 text-green-600" />
