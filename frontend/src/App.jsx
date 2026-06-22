@@ -6,6 +6,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import StudentDashboard from './pages/student/Dashboard'
 import ListingDetails from './pages/student/ListingDetails'
 import Listings from './pages/student/Listings'
+import StudentProfile from './pages/student/Profile'
 
 export default function App() {
     const { role } = useAuthStore()
@@ -21,10 +22,10 @@ export default function App() {
                 <Route path="/register" element={<Register />} />
 
                 <Route path="/student" element={<ProtectedRoute role="student" />}>
-                <Route path="dashboard"    element={<StudentDashboard />} />
-                <Route path="listings"     element={<Listings />} />
-                <Route path="listings/:id" element={<ListingDetails />} />
-
+                    <Route path="dashboard" element={<StudentDashboard />} />
+                    <Route path="profile" element={<StudentProfile />} />
+                    <Route path="listings" element={<Listings />} />
+                    <Route path="listings/:id" element={<ListingDetails />} />
                 </Route>
                 <Route path="*" element={<Navigate to={home} replace />} />
             </Routes>
