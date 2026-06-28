@@ -9,15 +9,13 @@ Task queue is a Redis LIST.
 Go API pushes to the LEFT  (LPush).
 Worker pops  from the RIGHT (BRPop) → FIFO order.
 """
-
-from cgitb import handler
 import json
 import logging
 import time
-from unittest import result
 import redis
 from config import QUEUE_KEY, REDIS_URL
-
+from tasks.resume import generate_resume
+from tasks.email  import send_status_email
 
 logging.basicConfig(
     level= logging.INFO,
@@ -77,3 +75,17 @@ def main():
                 log.warning('Unknown task type: %r', task_name)
                 continue
             
+            log.info('→ Starting task: %s | payload: %s', task_name, task)
+            handler(task)
+            log.info('Finished task: %s', task_name)
+
+        except KeyboardInterrupt:
+            log.info('Shutdown signal received — worker stopping')
+            break
+
+        except Exception as exc:
+            log.error('Unexpected error: %s', exc, exc_info=True)
+            time.sleep(1)
+
+if __name__ == '__main__':
+    main()
