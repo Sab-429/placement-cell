@@ -123,7 +123,6 @@ def _to_item_list(value) -> list:
     if value is None:
         return []
 
-    # Raw JSON string from DB
     if isinstance(value, str):
         try:
             value = json.loads(value)
@@ -147,10 +146,8 @@ def generate_resume(task: dict) -> None:
     user_id = int(task['user_id'])
     log.info('Generating resume for student %d', user_id)
 
-    # 1. Fetch student data
     student = _get_student(user_id)
 
-    # 2. Normalise all JSONB fields so template never crashes
     student['domains']         = _to_list(student.get('domains'))
     student['work_experience'] = _to_item_list(student.get('work_experience'))
     student['projects']        = _to_item_list(student.get('projects'))
@@ -159,12 +156,10 @@ def generate_resume(task: dict) -> None:
 
     log.debug('Student data normalised: %s', student)
 
-    # 3. Render HTML template
     env      = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
     template = env.get_template('resume.html')
     html_str = template.render(**student)
 
-    # 4. Write PDF to storage
     out_dir  = os.path.join(STORAGE_PATH, 'resumes')
     os.makedirs(out_dir, exist_ok=True)
 
@@ -174,5 +169,4 @@ def generate_resume(task: dict) -> None:
     HTML(string=html_str).write_pdf(out_path)
     log.info('PDF written to %s', out_path)
 
-    # 5. Mark ready in DB
     _mark_ready(user_id, filename)
