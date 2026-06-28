@@ -11,6 +11,9 @@ Worker pops  from the RIGHT (BRPop) → FIFO order.
 """
 
 import logging
+import time
+import redis
+from config import QUEUE_KEY, REDIS_URL
 
 
 logging.basicConfig(
@@ -26,3 +29,30 @@ TASK_ROUTER = {
     'send_email': send_status_email,
 }
 
+def connect_redis(retries: int= 5,  delay: int = 3):
+    """Connect to Redis with retry — useful when worker starts before Redis."""
+    for attempt in range(1, retries + 1):
+        try:
+            r = redis.from_url(REDIS_URL, decode_responses=True)
+            r.ping()
+            log.info('Connected to Redis at %s', REDIS_URL)
+            return r
+
+        except redis.ConnectionError:
+            log.warning(
+                'Redis not ready, retrying in %ds (attempt %d/%d)',
+                delay, attempt, retries,
+            )
+            time.sleep(delay)
+
+    log.error('Could not connect to Redis after %d attempts — exiting', retries)
+    return None
+
+def main():
+    r = connect_redis()
+    if r is None:
+        return
+    log.info("Listing on queue '%s'",QUEUE_KEY)
+
+    while True:
+        
