@@ -1,0 +1,62 @@
+# ── Secrets ───────────────────────────────────────────────────────────
+.env.global
+.env
+.env.local
+.env.production
+*.env
+
+# ── Storage (runtime files — not source code) ─────────────────────────
+storage/
+backend/storage/
+worker/storage/
+
+# ── Go ────────────────────────────────────────────────────────────────
+backend/bin/
+backend/tmp/
+backend/server
+backend/*.exe
+*.exe
+*.test
+*.out
+
+# ── Python ────────────────────────────────────────────────────────────
+worker/venv/
+worker/__pycache__/
+worker/tasks/__pycache__/
+worker/*.pyc
+worker/*.pyo
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+
+# ── Node / React ──────────────────────────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.env.production
+node_modules/
+
+# ── OS ────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+*.lnk
+
+# ── IDE ───────────────────────────────────────────────────────────────
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+.cursor/
+
+# ── Docker ────────────────────────────────────────────────────────────
+# Keep docker-compose.yml but ignore override files
+docker-compose.override.yml
+
+# ── Logs ──────────────────────────────────────────────────────────────
+*.log
+logs/

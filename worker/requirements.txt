@@ -1,0 +1,5 @@
+redis==5.0.4
+psycopg2-binary==2.9.9
+Jinja2==3.1.4
+WeasyPrint==61.2
+python-dotenv==1.0.1
