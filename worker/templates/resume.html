@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 13px;
+    color: #1a1a1a;
+    padding: 40px 48px;
+    line-height: 1.5;
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid #0f172a;
+    padding-bottom: 16px;
+    margin-bottom: 22px;
+  }
+  .name {
+    font-size: 26px;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.3px;
+  }
+  .meta {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 5px;
+  }
+  .contact {
+    text-align: right;
+    font-size: 12px;
+    color: #64748b;
+    line-height: 1.9;
+  }
+
+  /* ── Section ── */
+  .section { margin-bottom: 20px; }
+  .section-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #94a3b8;
+    border-bottom: 0.5px solid #e2e8f0;
+    padding-bottom: 5px;
+    margin-bottom: 12px;
+  }
+
+  /* ── Item ── */
+  .item { margin-bottom: 12px; }
+  .item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .item-title  { font-weight: 600; font-size: 13px; color: #0f172a; }
+  .item-sub    { font-size: 12px; color: #475569; margin-top: 2px; }
+  .item-time   { font-size: 11px; color: #94a3b8; white-space: nowrap; margin-left: 16px; }
+  .item-desc   { font-size: 12px; color: #475569; margin-top: 4px; line-height: 1.6; }
+
+  /* ── Skill tags ── */
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    background: #f1f5f9;
+    color: #334155;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div>
+    <div class="name">{{ name or 'Student' }}</div>
+    <div class="meta">
+      {% if branch %}{{ branch }}{% endif %}
+      {% if cgpa %} &nbsp;·&nbsp; CGPA {{ cgpa }}{% endif %}
+      {% if passing_year %} &nbsp;·&nbsp; Class of {{ passing_year }}{% endif %}
+    </div>
+  </div>
+  <div class="contact">
+    {{ email }}
+  </div>
+</div>
+
+<!-- About -->
+{% if about %}
+<div class="section">
+  <div class="section-title">Profile</div>
+  <p style="font-size:12.5px; color:#334155; line-height:1.7;">{{ about }}</p>
+</div>
+{% endif %}
+
+<!-- Skills -->
+{% if domains %}
+<div class="section">
+  <div class="section-title">Skills &amp; Interests</div>
+  <div class="tags">
+    {% for d in domains %}
+      <span class="tag">{{ d }}</span>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Work Experience -->
+{% if work_experience %}
+<div class="section">
+  <div class="section-title">Work Experience</div>
+  {% for exp in work_experience %}
+  <div class="item">
+    <div class="item-row">
+      <span class="item-title">{{ exp.get('title', '') }}</span>
+      <span class="item-time">{{ exp.get('time', '') }}</span>
+    </div>
+    {% if exp.get('description') %}
+    <div class="item-desc">{{ exp['description'] }}</div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Projects -->
+{% if projects %}
+<div class="section">
+  <div class="section-title">Projects</div>
+  {% for p in projects %}
+  <div class="item">
+    <div class="item-row">
+      <span class="item-title">{{ p.get('title', '') }}</span>
+      <span class="item-time">{{ p.get('time', '') }}</span>
+    </div>
+    {% if p.get('description') %}
+    <div class="item-desc">{{ p['description'] }}</div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Education -->
+{% if education %}
+<div class="section">
+  <div class="section-title">Education</div>
+  {% for e in education %}
+  <div class="item">
+    <div class="item-row">
+      <span class="item-title">{{ e.get('title', '') }}</span>
+      <span class="item-time">{{ e.get('time', '') }}</span>
+    </div>
+    {% if e.get('degree') %}
+    <div class="item-sub">{{ e['degree'] }}</div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Certificates -->
+{% if certificates %}
+<div class="section">
+  <div class="section-title">Certifications</div>
+  {% for cert in certificates %}
+  <div class="item">
+    <div class="item-row">
+      <span class="item-title">{{ cert.get('title', '') }}</span>
+    </div>
+    {% if cert.get('description') %}
+    <div class="item-desc">{{ cert['description'] }}</div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+</body>
+</html>
