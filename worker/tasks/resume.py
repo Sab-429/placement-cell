@@ -51,3 +51,128 @@ def _get_student(user_id: int) -> dict:
         return dict(row)
     finally:
         conn.close()
+
+    
+def _mark_ready(user_id: int, filename: str) -> None:
+    """
+    Set resume_ready = true and store the filename so the
+    Go API can serve the download link immediately.
+    """
+    conn = psycopg2.connect(**DB_CONFIG)
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            UPDATE students
+               SET resume_ready      = true,
+                   resume_file_name  = %s,
+                   updated_at        = NOW()
+             WHERE id = %s
+            """,
+            (filename, user_id),
+        )
+        conn.commit()
+        log.info('Marked student %d resume as ready (%s)', user_id, filename)
+    finally:
+        conn.close()
+
+
+def _to_list(value) -> list:
+
+    """
+    Postgres JSONB columns come back as Python dicts, lists, strings,
+    or even plain numbers if the data was corrupted (as we saw with domains).
+
+    This function always returns a safe list for the Jinja2 template,
+    so a corrupt value never crashes the resume generation.
+
+    Examples:
+      ["React", "Go"]   → ["React", "Go"]    (already a list)
+      {"0": "React"}    → ["React"]           (dict values)
+      "React"           → ["React"]           (bare string)
+      23456             → []                  (number — corrupted, skip)
+      None              → []                  (NULL column)
+      '["React","Go"]'  → ["React", "Go"]    (JSON string — parse it)
+    """
+    if value is None:
+        return []
+
+    if isinstance(value, str):
+        try:
+            value = json.loads(value)
+        except (json.JSONDecodeError, ValueError):
+            return [value] if value.strip() else []
+
+    if isinstance(value, list):
+        return [str(item) for item in value if item is not None]
+
+    if isinstance(value, dict):
+        return [str(v) for v in value.values() if v is not None]
+
+    log.warning('Unexpected JSONB value type %s: %r — skipping', type(value).__name__, value)
+    return []
+
+
+def _to_item_list(value) -> list:
+    """
+    For structured JSONB fields like work_experience, projects, education,
+    certificates — each item should be a dict with title, description, time etc.
+
+    Returns a list of dicts safe to iterate in the template.
+    """
+    if value is None:
+        return []
+
+    # Raw JSON string from DB
+    if isinstance(value, str):
+        try:
+            value = json.loads(value)
+        except (json.JSONDecodeError, ValueError):
+            return []
+
+    if isinstance(value, list):
+        return [item for item in value if isinstance(item, dict)]
+
+    if isinstance(value, dict):
+        return [v for v in value.values() if isinstance(v, dict)]
+
+    return []
+
+
+def generate_resume(task: dict) -> None:
+    """
+    Entry point called by the worker main loop.
+    task = { "task": "gen_resume", "user_id": 16 }
+    """
+    user_id = int(task['user_id'])
+    log.info('Generating resume for student %d', user_id)
+
+    # 1. Fetch student data
+    student = _get_student(user_id)
+
+    # 2. Normalise all JSONB fields so template never crashes
+    student['domains']         = _to_list(student.get('domains'))
+    student['work_experience'] = _to_item_list(student.get('work_experience'))
+    student['projects']        = _to_item_list(student.get('projects'))
+    student['education']       = _to_item_list(student.get('education'))
+    student['certificates']    = _to_item_list(student.get('certificates'))
+
+    log.debug('Student data normalised: %s', student)
+
+    # 3. Render HTML template
+    env      = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
+    template = env.get_template('resume.html')
+    html_str = template.render(**student)
+
+    # 4. Write PDF to storage
+    out_dir  = os.path.join(STORAGE_PATH, 'resumes')
+    os.makedirs(out_dir, exist_ok=True)
+
+    filename = f'resume_{user_id}.pdf'
+    out_path = os.path.join(out_dir, filename)
+
+    HTML(string=html_str).write_pdf(out_path)
+    log.info('PDF written to %s', out_path)
+
+    # 5. Mark ready in DB
+    _mark_ready(user_id, filename)
