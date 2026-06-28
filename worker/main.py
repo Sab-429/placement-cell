@@ -10,8 +10,11 @@ Go API pushes to the LEFT  (LPush).
 Worker pops  from the RIGHT (BRPop) → FIFO order.
 """
 
+from cgitb import handler
+import json
 import logging
 import time
+from unittest import result
 import redis
 from config import QUEUE_KEY, REDIS_URL
 
@@ -55,4 +58,22 @@ def main():
     log.info("Listing on queue '%s'",QUEUE_KEY)
 
     while True:
-        
+        try:
+            result = r.brpop(QUEUE_KEY, timeout=5)
+            if result is None:
+                continue
+
+            _, raw = result
+
+            try:
+                task = json.loads(raw)
+            except json.JSONDecoder:
+                log.error('Could not parse task JSON: %r', raw)
+                continue
+            task_name = task.get('task')
+            handler = TASK_ROUTER.get(task_name)
+
+            if handler is None:
+                log.warning('Unknown task type: %r', task_name)
+                continue
+            
