@@ -20,3 +20,9 @@ logging.basicConfig(
 )
 
 log = logging.getLogger('worker')
+
+TASK_ROUTER = {
+    'gen_resume': generate_resume,
+    'send_email': send_status_email,
+}
+
