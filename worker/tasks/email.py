@@ -19,8 +19,6 @@ from config import SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, EMAIL_FROM
 log = logging.getLogger('worker.email')
 
 
-# ── Core send ──────────────────────────────────────────────────────────
-
 def _send(to: str, subject: str, html_body: str) -> None:
     """
     Send one HTML email via SMTP with STARTTLS.
@@ -54,7 +52,6 @@ def _send(to: str, subject: str, html_body: str) -> None:
         raise
 
 
-# ── Queue handler ──────────────────────────────────────────────────────
 
 def send_status_email(task: dict) -> None:
     """
@@ -75,8 +72,6 @@ def send_status_email(task: dict) -> None:
     )
 
 
-# ── Typed helper ───────────────────────────────────────────────────────
-
 def send_application_status(
     student_email: str,
     student_name:  str,
@@ -96,8 +91,8 @@ def send_application_status(
         )
     """
     status_text = {
-        'shortlisted': '🎉 Great news! You have been shortlisted for the next round.',
-        'selected':    '🏆 Congratulations! You have been selected for this role.',
+        'shortlisted': ' Great news! You have been shortlisted for the next round.',
+        'selected':    ' Congratulations! You have been selected for this role.',
         'rejected':    'Thank you for applying. Unfortunately you were not selected this time. Keep going!',
     }.get(status, f'Your application status has changed to: {status}')
 
