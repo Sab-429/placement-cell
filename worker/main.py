@@ -9,6 +9,12 @@ Task queue is a Redis LIST.
 Go API pushes to the LEFT  (LPush).
 Worker pops  from the RIGHT (BRPop) → FIFO order.
 """
+
+import os
+os.environ['G_MESSAGES_DEBUG'] = ''
+os.environ['GLIB_SILENCE_DEPRECATION_WARNINGS'] = '1'
+
+
 import json
 import logging
 import time

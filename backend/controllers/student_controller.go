@@ -8,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,25 +22,58 @@ func GetStudentProfile(c *gin.Context) {
 }
 
 func UpdateStudentProfile(c *gin.Context) {
-	callerID, _ := c.Get("user_id")
-	paramID, _ := strconv.ParseUint(c.Param("id"), 10 , 64)
+    callerID, _ := c.Get("user_id")
+    paramID, _  := strconv.ParseUint(c.Param("id"), 10, 64)
 
-	if callerID.(uint) != uint(paramID) {
-		c.JSON(http.StatusForbidden, gin.H{"error" : "you can only edit your own profile"})
-		return
-	}
-	var updates map[string]interface{}
-	if err := c.ShouldBindJSON(&updates); err != nil {
-		c.JSON(http.StatusBadRequest , gin.H{"error": err.Error()})
-		return 
-	}
-	delete(updates, "password_hash")
-	delete(updates, "role")
-	delete(updates, "email")
+    if callerID.(uint) != uint(paramID) {
+        c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+        return
+    }
 
-	config.DB.Model(&models.Student{}).Where("id = ?",paramID).Updates(updates)
-	c.JSON(http.StatusOK, gin.H{"message": "Profile updated"})
+    var updates map[string]interface{}
+    if err := c.ShouldBindJSON(&updates); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
 
+    delete(updates, "password_hash")
+    delete(updates, "role")
+    delete(updates, "email")
+
+    // Extract domains separately — handle as JSON string for Postgres
+    var domainsJSON string
+    if domains, ok := updates["domains"]; ok {
+        delete(updates, "domains") // remove from map first
+
+        // Convert to JSON string
+        b, err := json.Marshal(domains)
+        if err == nil {
+            domainsJSON = string(b)
+        }
+    }
+
+    // Update non-domains fields first
+    if len(updates) > 0 {
+        if err := config.DB.Model(&models.Student{}).
+            Where("id = ?", paramID).
+            Updates(updates).Error; err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+            return
+        }
+    }
+
+    // Update domains separately using raw SQL to avoid type issue
+    if domainsJSON != "" {
+        if err := config.DB.Exec(
+            `UPDATE students SET domains = ?::jsonb WHERE id = ?`,
+            domainsJSON, paramID,
+        ).Error; err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+            return
+        }
+    }
+
+    c.JSON(http.StatusOK, gin.H{"message": "profile updated"})
 }
 
 func UploadPFP(c *gin.Context) {
