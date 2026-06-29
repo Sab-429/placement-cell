@@ -12,10 +12,11 @@ import (
 )
 
 func main() {
-	if err := godotenv.Load(".env.global"); err != nil {
-		log.Println("no .env.global file found, using system environment")
+	if err := godotenv.Load("../.env.global"); err != nil {
+		log.Println("failed to load ../.env.global:", err)
+	} else {
+		log.Println("loaded ../.env.global successfully")
 	}
-
 	config.ConnectDB()
 
 	controllers.InitQueue()
