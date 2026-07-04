@@ -35,6 +35,7 @@ export default function App() {
                     <Route path="dashboard" element={<RecruiterDashboard />} />
                     <Route path="listings/create" element={<CreateListing />} />
                     <Route path="listings" element={<MyListings />} />
+                    <Route path="profile" element={<ecruiterProfile />} />
                 </Route>
                 <Route path="*" element={<Navigate to={home} replace />} />
             </Routes>

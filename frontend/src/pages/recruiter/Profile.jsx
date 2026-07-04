@@ -30,6 +30,12 @@ export default function RecruiterProfile() {
         setTimeout(() => setSaved(false), 3000)
     }
 
+    const set = (field) => (e) => {
+        setForm((prev) => ({
+            ...prev,
+            [field]: e.target.value,
+        }))
+    }
     const handleLogo = async (e) => {
         const fd = new FormData() 
         fd.append('logo' , e.target.files[0])
