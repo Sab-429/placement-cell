@@ -30,10 +30,10 @@ export default function ListingCard({ listing }) {
             <img
               src={`/files/logos/${recruiter.logo_file_name}`}
               alt={recruiter.name}
-              className="w-11 h-11 rounded-xl object-contain border bg-white flex-shrink-0 p-1"
+              className="w-11 h-11 rounded-xl object-contain border bg-white shrink-0 p-1"
             />
           ) : (
-            <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
               <span className="text-primary font-bold text-sm">
                 {recruiter?.name?.[0] ?? 'C'}
               </span>

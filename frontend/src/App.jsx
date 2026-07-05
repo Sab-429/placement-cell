@@ -11,6 +11,8 @@ import RecruiterDashboard from './pages/recruiter/Dashboard'
 import CreateListing from './pages/recruiter/CreateListing'
 import MyListings from './pages/recruiter/MyListings'
 import RecruiterProfile from './pages/recruiter/Profile'
+import ListingApplicants  from './pages/recruiter/ListingApplicants'
+
 
 export default function App() {
     const { role } = useAuthStore()
@@ -32,11 +34,12 @@ export default function App() {
                     <Route path="listings/:id" element={<ListingDetails />} />
                 </Route>
 
-                <Route path="recruiter" element={<ProtectedRoute role="recruiter" />}>
+                <Route path="/recruiter" element={<ProtectedRoute role="recruiter" />}>
                     <Route path="dashboard" element={<RecruiterDashboard />} />
                     <Route path="listings/create" element={<CreateListing />} />
                     <Route path="listings" element={<MyListings />} />
                     <Route path="profile" element={<RecruiterProfile />} />
+                    <Route path="listings/:id/applications" element={<ListingApplicants />} />
                 </Route>
                 <Route path="*" element={<Navigate to={home} replace />} />
             </Routes>
