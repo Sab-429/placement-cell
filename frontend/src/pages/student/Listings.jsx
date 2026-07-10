@@ -16,12 +16,21 @@ export default function Listings() {
     const [filters, setFilters] = useState({ job_type: '', type: '', order: 'latest'})
 
     useEffect(() => {
-        const params = new URLSearchParams()
-        Object.entries(filters).forEach(([k, v]) => { if (v && v !== 'all') params.set(k, v)})
-        client.get(`/listings?${params}`)
-            .then(( { data }) => setListings(data ?? []))
-            .finally(() => setLoading(false))
-    },  [filters])
+      const params = new URLSearchParams()
+      Object.entries(filters).forEach(([k, v]) => { if (v && v !== 'all') params.set(k, v) })
+    
+      client.get(`/listings?${params}`)
+        .then(({ data }) => {
+          // Normalize uppercase ID to lowercase id
+          const normalized = (data ?? []).map(l => ({
+            ...l,
+            id: l.id ?? l.ID,
+            recruiter: l.recruiter ? { ...l.recruiter, id: l.recruiter.id ?? l.recruiter.ID } : null,
+          }))
+          setListings(normalized)
+        })
+        .finally(() => setLoading(false))
+    }, [filters])
 
     const visible = search
     ? listings.filter(l =>
