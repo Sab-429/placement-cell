@@ -225,3 +225,54 @@ def notify_student_status_change(task: dict) -> None:
     )
 
     log.info('Student notified: %s — status: %s', student_email, status)
+
+def notify_student_resume_ready(task: dict) -> None:
+    """
+    Called when resume generation is complete.
+    task = {
+        "task": "notify_student_resume_ready",
+        "student_email": "rahul@college.edu",
+        "student_name": "Rahul Kumar"
+    }
+    """
+    student_email = task['student_email']
+    student_name = task['student_name']
+
+
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="UTF-8"></head>
+    <body style="font-family:system-ui,sans-serif;background:#f9fafb;margin:0;padding:40px 16px;">
+      <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;
+                  padding:32px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+        <div style="text-align:center;margin-bottom:24px;">
+          <div style="font-size:48px;">📄</div>
+          <div style="font-size:22px;font-weight:700;color:#0f172a;margin-top:12px;">
+            Your Resume is Ready!
+          </div>
+        </div>
+        <p style="color:#334155;font-size:15px;line-height:1.6;">
+          Hi <strong>{student_name}</strong>, your resume has been generated successfully.
+          You can download it from your profile page.
+        </p>
+        <a href="http://localhost:5173/student/profile"
+           style="display:block;text-align:center;background:#0f172a;color:white;
+                  padding:14px 24px;border-radius:8px;text-decoration:none;
+                  font-size:14px;font-weight:600;margin-top:24px;">
+          Download Resume →
+        </a>
+        <div style="margin-top:32px;padding-top:20px;border-top:1px solid #e2e8f0;
+                    font-size:12px;color:#94a3b8;text-align:center;">
+          PlacementPortal
+        </div>
+      </div>
+    </body>
+    </html>
+    """
+
+    _send(
+        to = student_email,
+        subject='Your PlacementPortal resume is ready to download',
+        html_body=html
+    )
