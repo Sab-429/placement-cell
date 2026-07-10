@@ -23,17 +23,27 @@ from config import QUEUE_KEY, REDIS_URL
 from tasks.resume import generate_resume
 from tasks.email  import send_status_email
 
+
+from tasks.notification  import (
+    notify_recruiter_new_application,
+    notify_student_status_change,
+    notify_student_resume_ready,
+)
 logging.basicConfig(
     level= logging.INFO,
     format= '%(asctime)s [%(levelname)s] %(name)s — %(message)s',
     datefmt = '%Y-%m-%d %H:%M:%S',
 )
 
+
 log = logging.getLogger('worker')
 
 TASK_ROUTER = {
     'gen_resume': generate_resume,
     'send_email': send_status_email,
+    'notify_recruiter_new_application': notify_recruiter_new_application,
+    'notify_student_status_change':    notify_student_status_change,
+    'notify_student_resume_ready':     notify_student_resume_ready,
 }
 
 def connect_redis(retries: int= 5,  delay: int = 3):
