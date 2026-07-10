@@ -69,6 +69,7 @@ export default function CreateListing() {
       navigate('/recruiter/listings')
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to create listing')
+      console.log(err)
       toast.error(err.response?.data?.error || 'Failed to create listing')
     } finally {
       setLoading(false)
