@@ -163,3 +163,65 @@ def notify_student_status_change(task: dict) -> None:
         'message': f'Your application status has been updated to: {status}',
         'label':   status.capitalize(),
     })
+
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="UTF-8"></head>
+    <body style="font-family:system-ui,sans-serif;background:#f9fafb;margin:0;padding:40px 16px;">
+      <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;
+                  padding:32px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+
+        <!-- Header -->
+        <div style="text-align:center;margin-bottom:28px;">
+          <div style="font-size:48px;margin-bottom:12px;">{cfg['emoji']}</div>
+          <div style="font-size:22px;font-weight:700;color:#0f172a;">Application Update</div>
+          <div style="font-size:13px;color:#64748b;margin-top:4px;">PlacementPortal</div>
+        </div>
+
+        <p style="color:#334155;font-size:15px;line-height:1.6;">
+          Hi <strong>{student_name}</strong>,
+        </p>
+        <p style="color:#334155;font-size:15px;line-height:1.6;">
+          Your application for <strong>{listing_title}</strong> at
+          <strong>{company_name}</strong> has been reviewed.
+        </p>
+
+        <!-- Status box -->
+        <div style="background:{cfg['bg']};border:1px solid {cfg['border']};
+                    border-radius:12px;padding:20px;margin:24px 0;text-align:center;">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;
+                      color:#94a3b8;margin-bottom:8px;">Your Status</div>
+          <div style="font-size:28px;font-weight:800;color:{cfg['color']};">
+            {cfg['label']}
+          </div>
+        </div>
+
+        <p style="color:#334155;font-size:14px;line-height:1.7;
+                  background:#f8fafc;border-radius:8px;padding:16px;">
+          {cfg['message']}
+        </p>
+
+        <a href="http://localhost:5173/student/dashboard"
+           style="display:block;text-align:center;background:#0f172a;color:white;
+                  padding:14px 24px;border-radius:8px;text-decoration:none;
+                  font-size:14px;font-weight:600;margin-top:24px;">
+          View My Applications →
+        </a>
+
+        <div style="margin-top:32px;padding-top:20px;border-top:1px solid #e2e8f0;
+                    font-size:12px;color:#94a3b8;text-align:center;">
+          PlacementPortal · Do not reply to this email
+        </div>
+      </div>
+    </body>
+    </html>
+    """
+
+    _send(
+        to = student_email,
+        subject=f'Application update: {listing_title} at {company_name}',
+        html_body=html,
+    )
+
+    log.info('Student notified: %s — status: %s', student_email, status)
