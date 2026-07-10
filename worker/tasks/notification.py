@@ -138,5 +138,28 @@ def notify_student_status_change(task: dict) -> None:
             'border':  '#bfdbfe',
             'message': 'Congratulations! You have been shortlisted for the next round. Expect to hear from the recruiter soon with further details.',
             'label':   'Shortlisted',
-        }
+        },
+        'selected' : {
+            'color':   '#16a34a',
+            'bg':      '#f0fdf4',
+            'border':  '#bbf7d0',
+            'message': 'Congratulations! You have been selected for this role. The recruiter will contact you with the offer details and next steps.',
+            'label':   'Selected',
+        },
+        'rejected' : {
+            'color':   '#dc2626',
+            'bg':      '#fef2f2',
+            'border':  '#fecaca',
+            'message': 'Thank you for applying. Unfortunately, you were not selected for this role at this time. Keep applying — the right opportunity is out there!',
+            'label':   'Not Selected',
+        },
     }
+
+
+    cfg = status_config.get(status, {
+        'color':   '#6b7280',
+        'bg':      '#f9fafb',
+        'border':  '#e5e7eb',
+        'message': f'Your application status has been updated to: {status}',
+        'label':   status.capitalize(),
+    })
