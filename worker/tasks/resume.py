@@ -170,3 +170,13 @@ def generate_resume(task: dict) -> None:
     log.info('PDF written to %s', out_path)
 
     _mark_ready(user_id, filename)
+
+    try:
+        from tasks.notification import notify_student_resume_ready
+        notify_student_resume_ready({
+            'task':          'notify_student_resume_ready',
+            'student_email': student['email'],
+            'student_name':  student['name'],
+        })
+    except Exception as e:
+        log.warning('Could not send resume ready email: %s', e)
