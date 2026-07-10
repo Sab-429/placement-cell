@@ -7,7 +7,7 @@ Sends emails for:
 """
 
 import logging
-
+from tasks.email import _send
 
 log = logging.getLogger('worker.notification')
 
@@ -99,3 +99,44 @@ def notify_recruiter_new_application(task: dict) -> None:
     </html>
     """
 
+    _send(
+        to        = recruiter_email,
+        subject   = f'New application: {student_name} applied for {listing_title}',
+        html_body = html,
+    )
+
+    log.info(
+        'Recruiter notified: %s about %s',
+        recruiter_email, student_name,
+    )
+
+
+def notify_student_status_change(task: dict) -> None:
+    """
+    Called when a recruiter updates an application status.
+    task = {
+        "task": "notify_student_status_change",
+        "student_email": "rahul@college.edu",
+        "student_name": "Rahul Kumar",
+        "company_name": "Tech Corp",
+        "listing_title": "Backend Developer",
+        "status": "shortlisted"
+    }
+    """
+    
+    student_email = task['student_email'],
+    student_name  = task['student_name'],
+    company_name  = task['company_name'],
+    listing_title = task['listing_title'],
+    status        = task['status'],
+    
+
+    status_config = {
+        'shortlisted' : {
+            'color':   '#2563EB',
+            'bg':      '#eff6ff',
+            'border':  '#bfdbfe',
+            'message': 'Congratulations! You have been shortlisted for the next round. Expect to hear from the recruiter soon with further details.',
+            'label':   'Shortlisted',
+        }
+    }
