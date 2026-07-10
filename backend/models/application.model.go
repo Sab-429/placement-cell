@@ -6,7 +6,10 @@ import (
 )
 
 type Application struct {
-	gorm.Model
+	ID             uint           `gorm:"primarykey"    json:"id"`
+	CreatedAt      time.Time      `                     json:"created_at"`
+	UpdatedAt      time.Time      `                     json:"updated_at"`
+	DeletedAt      gorm.DeletedAt `gorm:"index"         json:"-"`
 	StudentID uint      `json:"student_id"`
 	Student   Student   `json:"student"`   // populated by Preload("Student")
 	ListingID uint      `json:"listing_id"`
