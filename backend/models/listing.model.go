@@ -5,7 +5,10 @@ import (
 	"gorm.io/gorm"
 )
 type Listing struct {
-	gorm.Model
+	ID              uint            `gorm:"primarykey" json:"id"`
+	CreatedAt       time.Time       `json:"created_at"`
+	UpdatedAt       time.Time       `json:"updated_at"`
+	DeletedAt       gorm.DeletedAt  `gorm:"index" json:"-"`
 	Title           string      `json:"title"`
 	Type            string      `json:"type"`             // "remote" | "on-site"
 	JobType         string      `json:"job_type"`         // "internship" | "full-time"
