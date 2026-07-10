@@ -5,8 +5,10 @@ import { MapPin, Clock, Users, IndianRupee } from 'lucide-react'
 
 export default function ListingCard({ listing }) {
   const navigate = useNavigate()
+  const id = listing?.id ?? listing?.ID
+
   const {
-    id, title, type, job_type,
+     title, type, job_type,
     salary_min, salary_max,
     experience_years, applications_num, recruiter,
   } = listing
