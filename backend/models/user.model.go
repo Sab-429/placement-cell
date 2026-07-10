@@ -66,7 +66,10 @@ func (j *JSONB) Scan(value interface{}) error {
 //student model section
 
 type Student struct {
-	gorm.Model
+	ID             uint           `gorm:"primarykey"    json:"id"`
+	CreatedAt      time.Time      `                     json:"created_at"`
+	UpdatedAt      time.Time      `                     json:"updated_at"`
+	DeletedAt      gorm.DeletedAt `gorm:"index"         json:"-"`
 	Role           string      `gorm:"default:'student'"       json:"role"`
 	Name           string      `                               json:"name"`
 	Email          string      `gorm:"uniqueIndex"             json:"email"`
@@ -87,7 +90,10 @@ type Student struct {
 
 // Recruiter model section
 type Recruiter struct {
-	gorm.Model
+	ID             uint           `gorm:"primarykey"    json:"id"`
+	CreatedAt      time.Time      `                     json:"created_at"`
+	UpdatedAt      time.Time      `                     json:"updated_at"`
+	DeletedAt      gorm.DeletedAt `gorm:"index"         json:"-"`
 	Role         string `gorm:"default:'recruiter'" json:"role"`
 	Name         string `                           json:"name"`
 	Email        string `gorm:"uniqueIndex"         json:"email"`
@@ -101,7 +107,10 @@ type Recruiter struct {
 //Admin section model
 
 type Admin struct {
-	gorm.Model
+	ID             uint           `gorm:"primarykey"    json:"id"`
+	CreatedAt      time.Time      `                     json:"created_at"`
+	UpdatedAt      time.Time      `                     json:"updated_at"`
+	DeletedAt      gorm.DeletedAt `gorm:"index"         json:"-"`
 	Role         string `gorm:"default:'admin'" json:"role"`
 	Email        string `gorm:"uniqueIndex"     json:"email"`
 	PasswordHash string `                       json:"-"`
