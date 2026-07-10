@@ -3,8 +3,9 @@ import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import useAuthStore from "@/store/authStore";
-import { ArrowRight, Badge, Briefcase, Eye, Plus, TrendingUp, Users } from "lucide-react";
+import { ArrowRight, Briefcase, Eye, Plus, TrendingUp, Users } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 
 export default function RecruiterDashboard() {
