@@ -43,6 +43,18 @@ func UpdateApplicationStatus(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error":"status must be one of: applied, shortlisted, selected, rejected"})
 		return
 	}
+
+	validStatuses := map[string]bool{
+		"applied": true, "shortlisted": true,
+		"selected": true, "rejected": true,
+	}
+	if !validStatuses[body.Status] {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "status must be one of: applied, shortlisted, selected, rejected",
+		})
+		return
+	}
+
 	var app models.Application
 	if err := config.DB.Preload("Listing").First(&app, c.Param("id")).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error":"application not found"})
@@ -54,6 +66,17 @@ func UpdateApplicationStatus(c *gin.Context) {
 		return
 	}
 	config.DB.Model(&app).Update("status",body.Status)
+
+	if queueClient != nil && app.Student.Email != "" {
+		queueClient.Push(map[string]interface{}{
+			"task":          "notify_student_status_change",
+			"student_email": app.Student.Email,
+			"student_name":  app.Student.Name,
+			"company_name":  app.Listing.Recruiter.Name,
+			"listing_title": app.Listing.Title,
+			"status":        body.Status,
+		})
+	}
 	c.JSON(http.StatusOK, gin.H{"message":"status updated", "status": body.Status})
 }
 
