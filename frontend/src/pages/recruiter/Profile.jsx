@@ -1,86 +1,104 @@
-import client from "@/api/client";
-import Navbar from "@/components/Navbar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import useAuthStore from "@/store/authStore";
-import { useEffect, useState } from "react";
+
+import { useForm } from  'react-hook-form'
+import useAuthStore from '@/store/authStore'
+import { useEffect, useState } from 'react'
+import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
+import client from '@/api/client'
+import { toast } from 'sonner'
+import Navbar from '@/components/Navbar'
+
+const schema = z.object({
+  name: z.string().min(2, 'company name required'),
+  domain: z.string().min(1, 'Domain required'),
+  num_employees: z.coerce.number().min(1),
+  about: z.string().optional(),
+  email: z.string().email().optional().or(z.literal('')),
+  website:       z.string().optional(),
+  location:      z.string().optional(),
+  founded_year:  z.coerce.number().optional(),
+  phone:         z.string().optional(),
+})
 
 export default function RecruiterProfile() {
-    const { userId } = useAuthStore()
-    const [form, setForm] = useState({})
-    const [saved, setSaved] = useState(false)
-    const [loading, setLoading] = useState(false)
+  const { userId } = useAuthStore()
+  const [profile, setProfile] = useState(null)
+  const [logoPreview, setLogoPreview] = useState(null)
+  const [saving, setSaving] = useState(null)
+  const [stats, setStats] = useState({ total: 0, open: 0, apps: 0 })
+  const [loading, setLoading] = useState(true)
 
-    useEffect(() => {
-        client.get(`/recruiters/${userId}`)
-        .then(({data}) => setForm(data))
-    }, [userId])
+  const { register, handleSubmit, reset, formState: {errors}} = useForm({
+    resolver: zodResolver(schema)
+  })
 
-    const handleSave = async (e) => {
-        e.preventDefault()
-        setLoading(true)
-        await client.put(`/recruiters/${userId}`, {
-            name: form.name, 
-            about: form.about,
-            domain: form.domain,
-            num_employees: Number(form.num_employees),
-        })
-        setSaved(true)
-        setLoading(false)
-        setTimeout(() => setSaved(false), 3000)
-    }
+  useEffect(() => {
+    Promise.all([
+      client.get(`/recruiter/recruiters/${userId}`),
+      client.get(`/listings?company_id=${userId}`),
+    ]).then(([p , l]) => {
+      const prof = p.data
+      const listings = l.data ?? []
+      setProfile(prof)
+      setStats({
+        total: listings.length,
+        open:  listings.filter(x => x.is_open).length,
+        apps:  listings.reduce((s, x) => s + (x.applications_num ?? 0), 0),
+      })
+      reset({
+        name:          prof.name          ?? '',
+        domain:        prof.domain        ?? '',
+        num_employees: prof.num_employees ?? '',
+        about:         prof.about         ?? '',
+        email:         prof.email         ?? '',
+        website:       prof.website       ?? '',
+        location:      prof.location      ?? '',
+        phone:         prof.phone         ?? '',
+      })
+    }).finally(() => setLoading(false))
+  }), [userId]
 
-    const set = (field) => (e) => {
-        setForm((prev) => ({
-            ...prev,
-            [field]: e.target.value,
-        }))
+  const onSubmit = async (data) => {
+    setSaving(true)
+    try {
+      await client.put(`/recruiter/recruiters/${userId}`, data)
+      const updated = { ...profile, ...data }
+      setProfile(updated)
+      toast.success('Profile updated successfully!')
+    } catch (error) {
+      toast.error('Failed to update profile!')
+    } finally {
+      setSaving(false)
     }
-    const handleLogo = async (e) => {
-        const fd = new FormData() 
-        fd.append('logo' , e.target.files[0])
-        await client.post(`/recruiters/${userId}/logo`, fd)
+  }
+
+  const handleLogo = async (e) => {
+    const file = e.target.files[0]
+    if(!file) return 
+    setLogoPreview(URL.createObjectURL(file))
+    const fd = new FormData()
+    fd.append('logo', file)
+    try {
+      await client.post(`/recruiter/recruiters/${userId}/logo`, fd)
+      toast.success('Logo updated')
+    } catch (error) {
+      toast.error('Failed to upload logo')
+      setLogoPreview(null)
     }
-    return (
-        <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <div className="max-w-2xl mx-auto px-4 py-8">
-          <h1 className="text-xl font-bold mb-6">Company Profile</h1>
-  
-          {/* Logo */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-6 flex items-center gap-5">
-            <img
-              src={form.logo_file_name ? `/files/logos/${form.logo_file_name}` : '/placeholder-logo.png'}
-              alt="logo"
-              className="w-16 h-16 rounded-xl object-contain border border-gray-200"
-            />
-            <label className="cursor-pointer text-sm text-brand-600 hover:underline">
-              Upload logo
-              <input type="file" accept="image/*" className="hidden" onChange={handleLogo} />
-            </label>
-          </div>
-  
-          <form onSubmit={handleSave} className="bg-white rounded-2xl border border-gray-200 p-6 space-y-4">
-            <Input label="Company name"    value={form.name          ?? ''} onChange={set('name')} />
-            <Input label="Domain / industry" value={form.domain       ?? ''} onChange={set('domain')} />
-            <Input label="No. of employees" value={form.num_employees ?? ''} onChange={set('num_employees')} type="number" />
-  
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">About</label>
-              <textarea rows={4}
-                className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none
-                           focus:border-brand-500 focus:ring-2 focus:ring-brand-50 resize-none"
-                value={form.about ?? ''}
-                onChange={set('about')}
-              />
-            </div>
-  
-            <div className="flex items-center gap-3">
-              <Button type="submit" loading={loading}>Save changes</Button>
-              {saved && <span className="text-sm text-green-600">Saved!</span>}
-            </div>
-          </form>
-        </div>
+  }
+
+  const logoSrc = logoPreview ||
+    (profile?.logo_file_name ? `/files/logos/${profile.logo_file_name}` : null)
+
+  if (loading) return (
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <div className="flex items-center justify-center h-96">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
-    )
+    </div>
+  )
+
+  
 }
+
