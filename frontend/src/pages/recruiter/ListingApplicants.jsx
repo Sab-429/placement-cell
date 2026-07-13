@@ -44,10 +44,14 @@ export default function ListingApplicants() {
   const updateStatus = async (appId, status) => {
     setUpdating(appId)
     try {
-      await client.put(`/recruiter/applicants/${appId}/status`, { status })
+      await client.put(`/recruiter/applications/${appId}/status`, { status })
       setApps(as => as.map(a => a.id === appId ? { ...a, status } : a))
       toast.success(`Status updated to ${status} — student notified by email`)
-    } catch {
+    } catch (err) {
+      console.log(err);
+      console.log(err.response);
+      console.log(err.response?.status);
+      console.log(err.response?.data);
       toast.error('Failed to update status')
     } finally {
       setUpdating(null)
