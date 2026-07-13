@@ -63,8 +63,10 @@ export default function StudentDashboard() {
                      <h1 className="text-2xl md:text-3xl font-bold">
                         Welcome back, {profile?.name?.split(' ')[0] ?? 'Student'}
                      </h1>
-                     <p className="text-primary-foreground/70 mt-1">
-                        {profile?.branch} · CGPA {profile?.cgpa} · Class of {profile?.passing_year}
+                     <p className="text-white/60 mt-1 text-sm">
+                        {profile?.branch && `${profile.branch} · `}
+                        {profile?.cgpa > 0 && `CGPA ${profile.cgpa} · `}
+                        {profile?.passing_year && `Class of ${profile.passing_year}`}
                      </p>
                      <div className="flex items-center gap-2 mt-3 text-xs text-white/50">
                         <Bell className="w-3.5 h-3.5" />
