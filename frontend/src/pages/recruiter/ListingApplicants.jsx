@@ -44,7 +44,7 @@ export default function ListingApplicants() {
   const updateStatus = async (appId, status) => {
     setUpdating(appId)
     try {
-      await client.put(`/recruiter/applications/${appId}/status`, { status })
+      await client.put(`/recruiter/applicants/${appId}/status`, { status })
       setApps(as => as.map(a => a.id === appId ? { ...a, status } : a))
       toast.success(`Status updated to ${status} — student notified by email`)
     } catch {
@@ -193,117 +193,117 @@ export default function ListingApplicants() {
                     </div>
 
                     {app.student?.resume_ready && (
-                    <a
-                      href = {`/files/resumes/resume_${app.student.id}.pdf`}
-                      download
-                      target="_blank"
-                      rel="noreferrer"
-                      className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50
+                      <a
+                        href={`/files/resumes/resume_${app.student.id}.pdf`}
+                        download
+                        target="_blank"
+                        rel="noreferrer"
+                        className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50
                       transition-colors text-gray-500 hover:text-gray-900"
-                      title="Download resume"
-                    >
-                    <Download className="w-4 h-4" />
-                  </a>
+                        title="Download resume"
+                      >
+                        <Download className="w-4 h-4" />
+                      </a>
                     )}
 
-                  <button
-                    onClick={() => setExpanded(expanded === app.id ? null : app.id)}
-                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50
+                    <button
+                      onClick={() => setExpanded(expanded === app.id ? null : app.id)}
+                      className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50
                                  transition-colors text-gray-500"
-                  >
-                    <ChevronDown className={`w-4 h-4 transition-transform ${expanded === app.id ? 'rotate-180' : ''
-                      }`} />
-                  </button>
+                    >
+                      <ChevronDown className={`w-4 h-4 transition-transform ${expanded === app.id ? 'rotate-180' : ''
+                        }`} />
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-                { expanded === app.id && (
-                <div className="border-t border-gray-100 px-5 py-4 bg-gray-50/50">
-                  <div className="grid sm:grid-cols-3 gap-4 text-sm">
+                {expanded === app.id && (
+                  <div className="border-t border-gray-100 px-5 py-4 bg-gray-50/50">
+                    <div className="grid sm:grid-cols-3 gap-4 text-sm">
 
-                    {/* Academic */}
-                    <div>
-                      <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">
-                        Academic
-                      </p>
-                      <div className="space-y-1.5">
-                        <div className="flex justify-between">
-                          <span className="text-gray-500">Branch</span>
-                          <span className="font-medium">{app.student?.branch || '—'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-500">CGPA</span>
-                          <span className="font-medium">{app.student?.cgpa || '—'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-500">Passing year</span>
-                          <span className="font-medium">{app.student?.passing_year || '—'}</span>
+                      {/* Academic */}
+                      <div>
+                        <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">
+                          Academic
+                        </p>
+                        <div className="space-y-1.5">
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Branch</span>
+                            <span className="font-medium">{app.student?.branch || '—'}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">CGPA</span>
+                            <span className="font-medium">{app.student?.cgpa || '—'}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-gray-500">Passing year</span>
+                            <span className="font-medium">{app.student?.passing_year || '—'}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* About */}
-                    <div>
-                      <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">
-                        About
-                      </p>
-                      <p className="text-gray-600 text-sm leading-relaxed">
-                        {app.student?.about || 'No description provided.'}
-                      </p>
-                    </div>
+                      {/* About */}
+                      <div>
+                        <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">
+                          About
+                        </p>
+                        <p className="text-gray-600 text-sm leading-relaxed">
+                          {app.student?.about || 'No description provided.'}
+                        </p>
+                      </div>
 
-                    {/* Skills */}
-                    <div>
-                      <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">
-                        Skills
-                      </p>
-                      {app.student?.domains?.length > 0 ? (
-                        <div className="flex flex-wrap gap-1.5">
-                          {app.student.domains.map(d => (
-                            <span key={d}
-                              className="text-xs bg-white border border-gray-200
+                      {/* Skills */}
+                      <div>
+                        <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">
+                          Skills
+                        </p>
+                        {app.student?.domains?.length > 0 ? (
+                          <div className="flex flex-wrap gap-1.5">
+                            {app.student.domains.map(d => (
+                              <span key={d}
+                                className="text-xs bg-white border border-gray-200
                                            px-2 py-0.5 rounded-full text-gray-700">
-                              {d}
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-gray-400 text-sm">No skills listed</p>
-                      )}
+                                {d}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-gray-400 text-sm">No skills listed</p>
+                        )}
+                      </div>
+
                     </div>
 
-                  </div>
-
-                  {/* Quick actions */}
-                  <div className="flex gap-2 mt-4 pt-3 border-t border-gray-100">
-                    <a
-                    href={`mailto:${app.student?.email}`}
-                    className="flex items-center gap-1.5 text-xs text-gray-500
+                    {/* Quick actions */}
+                    <div className="flex gap-2 mt-4 pt-3 border-t border-gray-100">
+                      <a
+                        href={`mailto:${app.student?.email}`}
+                        className="flex items-center gap-1.5 text-xs text-gray-500
                     hover:text-gray-900 border border-gray-200 rounded-lg
                     px-3 py-1.5 hover:bg-white transition-colors"
                       >
-                    <Mail className="w-3.5 h-3.5" />
-                    Send email
-                  </a>
-                  {app.student?.resume_ready && (
-                  <a
-                  href = {`/files/resumes/resume_${app.student.id}.pdf`}
-                  download target="_blank" rel="noreferrer"
-                  className="flex items-center gap-1.5 text-xs text-gray-500
+                        <Mail className="w-3.5 h-3.5" />
+                        Send email
+                      </a>
+                      {app.student?.resume_ready && (
+                        <a
+                          href={`/files/resumes/resume_${app.student.id}.pdf`}
+                          download target="_blank" rel="noreferrer"
+                          className="flex items-center gap-1.5 text-xs text-gray-500
                   hover:text-gray-900 border border-gray-200 rounded-lg
                   px-3 py-1.5 hover:bg-white transition-colors"
-                  >
-                  <Download className="w-3.5 h-3.5" />
-                  Download resume
-                </a>
-              )}
-          </div>
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          Download resume
+                        </a>
+                      )}
+                    </div>
                   </div>
                 )}
 
-    </div>
-  ))
-}
+              </div>
+            ))
+            }
           </div >
         )}
 

@@ -37,7 +37,7 @@ func GetApplicationsForListing(c *gin.Context) {
 
 func UpdateApplicationStatus(c *gin.Context) {
 	var body struct {
-		Status string `json:"status" binding:"required,oneof=applied shortlisted, selected, rejected"` 
+		Status string `json:"status" binding:"required"` 
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error":"status must be one of: applied, shortlisted, selected, rejected"})
@@ -56,8 +56,11 @@ func UpdateApplicationStatus(c *gin.Context) {
 	}
 
 	var app models.Application
-	if err := config.DB.Preload("Listing").First(&app, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error":"application not found"})
+	if err := config.DB.
+		Preload("Listing.Recruiter").
+		Preload("Student").
+		First(&app, c.Param("id")).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "application not found"})
 		return
 	}
 	recruiterID, _ := c.Get("user_id")

@@ -145,9 +145,9 @@ func ApplyToListing(c *gin.Context) {
 	}
 
 	var listing models.Listing
-	if err := config.DB.First(&listing, listingID).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error":"listing not available"})
-		return 
+	if err := config.DB.Preload("Recruiter").First(&listing, listingID).Error; err != nil || !listing.IsOpen {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "listing not available"})
+		return
 	}
 	var student models.Student
 	config.DB.First(&student, studentID)

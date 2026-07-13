@@ -2,12 +2,12 @@ import client from "@/api/client";
 import useAuthStore from "@/store/authStore";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Button }      from '@/components/ui/button'
-import { Separator }   from '@/components/ui/separator'
-import StatusBadge     from '@/components/StatusBadge'
+import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
+import StatusBadge from '@/components/StatusBadge'
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import {Briefcase,CheckCircle, XCircle, Clock, Star,ArrowRight, Download, RefreshCw } from 'lucide-react'
+import { Briefcase, CheckCircle, XCircle, Clock, Star, ArrowRight, Download, RefreshCw, Bell } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 
 export default function StudentDashboard() {
@@ -61,11 +61,15 @@ export default function StudentDashboard() {
                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
                      <h1 className="text-2xl md:text-3xl font-bold">
-                        Welcome back, {profile?.name?.split(' ')[0] ?? 'Student'} 👋
+                        Welcome back, {profile?.name?.split(' ')[0] ?? 'Student'}
                      </h1>
                      <p className="text-primary-foreground/70 mt-1">
                         {profile?.branch} · CGPA {profile?.cgpa} · Class of {profile?.passing_year}
                      </p>
+                     <div className="flex items-center gap-2 mt-3 text-xs text-white/50">
+                        <Bell className="w-3.5 h-3.5" />
+                        You will receive email notifications when your application status changes
+                     </div>
                   </div>
                   <div className="flex gap-3 flex-wrap">
                      {profile?.resume_ready ? (
