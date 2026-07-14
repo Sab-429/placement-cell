@@ -1,15 +1,31 @@
 """
-Notification task handler.
-Sends emails for:
-  - New application received (to recruiter)
-  - Application status changed (to student)
-  - Resume generated (to student)
+All notification emails for the placement portal.
+
+  1. notify_recruiter_new_application — when student applies
+  2. notify_student_status_change     — when recruiter updates status
+  3. notify_student_resume_ready      — when PDF generation finishes
 """
 
 import logging
+from config import APP_URL
 from tasks.email import _send
 
 log = logging.getLogger('worker.notification')
+
+_BASE_STYLE = """
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f8fafc;
+  margin: 0;
+  padding: 0;
+"""
+_CARD_STYLE = """
+  max-width: 560px;
+  margin: 40px auto;
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+"""
 
 def notify_recruiter_new_application(task: dict) -> None:
     """
