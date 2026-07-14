@@ -27,8 +27,7 @@ QUEUE_KEY = 'tasks:worker'
 
 STORAGE_PATH = os.getenv('STORAGE_PATH', './storage')
 
-SMTP_HOST  = os.getenv('SMTP_HOST',  'smtp.sendgrid.net')
-SMTP_PORT  = int(os.getenv('SMTP_PORT', '587'))
-SMTP_USER  = os.getenv('SMTP_USER',  '')
-SMTP_PASS  = os.getenv('SMTP_PASS',  '')
-EMAIL_FROM = os.getenv('EMAIL_FROM', 'noreply@portal.com')
+# ── Resend ─────────────────────────────────────────────────────────────
+RESEND_API_KEY = os.getenv('RESEND_API_KEY', '')
+EMAIL_FROM     = os.getenv('EMAIL_FROM', 'PlacementPortal <onboarding@resend.dev>')
+APP_URL        = os.getenv('APP_URL', 'http://localhost:5173')

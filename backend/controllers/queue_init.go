@@ -50,8 +50,15 @@ func (q *redisQueue) Push(task map[string]interface{}) error {
 		return err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
+	ctx := context.Background()
 
-	return q.client.LPush(ctx, workerQueueKey, data).Err()
+	err = q.client.LPush(ctx, workerQueueKey, data).Err()
+	if err != nil {
+		return err
+	}
+
+	length, _ := q.client.LLen(ctx, workerQueueKey).Result()
+	log.Printf("Queue length after LPUSH: %d", length)
+
+	return nil
 }

@@ -4,7 +4,7 @@ import (
 	"backend/config"
 	"backend/models"
 	"net/http"
-
+	"log"
 	"github.com/gin-gonic/gin"
 )
 
@@ -68,10 +68,27 @@ func UpdateApplicationStatus(c *gin.Context) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
 		return
 	}
+	log.Println("Reached queue section")
+
+
+	//test
+if queueClient == nil {
+    log.Println("queueClient is NIL")
+} else {
+    log.Println("queueClient is initialized")
+}
+
+log.Println("Student Email:", app.Student.Email)
+log.Println("Student Name:", app.Student.Name)
+log.Println("Status:", body.Status)
+
+
 	config.DB.Model(&app).Update("status",body.Status)
 
 	if queueClient != nil && app.Student.Email != "" {
-		queueClient.Push(map[string]interface{}{
+
+		log.Println("Calling Push()")
+		err := queueClient.Push(map[string]interface{}{
 			"task":          "notify_student_status_change",
 			"student_email": app.Student.Email,
 			"student_name":  app.Student.Name,
@@ -79,6 +96,11 @@ func UpdateApplicationStatus(c *gin.Context) {
 			"listing_title": app.Listing.Title,
 			"status":        body.Status,
 		})
+		if err != nil {
+			log.Println("Push failed:", err)
+		} else {
+			log.Println("Push succeeded")
+		}
 	}
 	c.JSON(http.StatusOK, gin.H{"message":"status updated", "status": body.Status})
 }
