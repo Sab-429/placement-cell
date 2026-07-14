@@ -29,5 +29,5 @@ STORAGE_PATH = os.getenv('STORAGE_PATH', './storage')
 
 # ── Resend ─────────────────────────────────────────────────────────────
 RESEND_API_KEY = os.getenv('RESEND_API_KEY', '')
-EMAIL_FROM     = os.getenv('EMAIL_FROM', 'PlacementPortal <onboarding@resend.dev>')
+EMAIL_FROM     = os.getenv('EMAIL_FROM', 'Auth <auth@sabyasachisaha.in>')
 APP_URL        = os.getenv('APP_URL', 'http://localhost:5173')

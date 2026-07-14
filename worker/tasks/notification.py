@@ -162,11 +162,11 @@ def notify_student_status_change(task: dict) -> None:
     }
     """
     
-    student_email = task['student_email'],
-    student_name  = task['student_name'],
-    company_name  = task['company_name'],
-    listing_title = task['listing_title'],
-    status        = task['status'],
+    student_email = task['student_email']
+    student_name  = task['student_name']
+    company_name  = task['company_name']
+    listing_title = task['listing_title']
+    status        = task['status']
     
 
     STATUS_MAP = {
