@@ -299,30 +299,51 @@ def notify_student_resume_ready(task: dict) -> None:
     html = f"""
     <!DOCTYPE html>
     <html>
-    <head><meta charset="UTF-8"></head>
-    <body style="font-family:system-ui,sans-serif;background:#f9fafb;margin:0;padding:40px 16px;">
-      <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;
-                  padding:32px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
-        <div style="text-align:center;margin-bottom:24px;">
-          <div style="font-size:48px;">📄</div>
-          <div style="font-size:22px;font-weight:700;color:#0f172a;margin-top:12px;">
-            Your Resume is Ready!
+    <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"></head>
+    <body style="{_BASE_STYLE}">
+      <div style="{_CARD_STYLE}">
+
+        {_header('📄', 'Your Resume is Ready!', 'Download and start applying')}
+
+        <div style="padding:32px;">
+          <p style="color:#334155;font-size:15px;line-height:1.6;margin:0 0 20px;">
+            Hi <strong>{student_name}</strong>,
+          </p>
+          <p style="color:#334155;font-size:15px;line-height:1.6;margin:0 0 24px;">
+            Your resume has been generated successfully from your profile data.
+            You can download it directly from your profile page and start applying
+            to jobs right away!
+          </p>
+
+          <!-- Feature list -->
+          <div style="background:#f8fafc;border-radius:12px;padding:20px;margin-bottom:24px;">
+            <p style="color:#0f172a;font-size:13px;font-weight:600;margin:0 0 12px;">
+              Your resume includes:
+            </p>
+            {"".join([
+              f'<div style="display:flex;align-items:center;gap:10px;padding:6px 0;">'
+              f'<span style="color:#16a34a;font-size:16px;">✓</span>'
+              f'<span style="color:#475569;font-size:13px;">{item}</span>'
+              f'</div>'
+              for item in [
+                'Academic information & CGPA',
+                'Skills & domains',
+                'Work experience',
+                'Projects',
+                'Education & certifications',
+              ]
+            ])}
           </div>
+
+          {_button('Download Resume →', f'{APP_URL}/student/profile', '#16a34a')}
+
+          <p style="color:#94a3b8;font-size:12px;text-align:center;margin:16px 0 0;">
+            You can regenerate your resume anytime from your profile page
+            after updating your information.
+          </p>
         </div>
-        <p style="color:#334155;font-size:15px;line-height:1.6;">
-          Hi <strong>{student_name}</strong>, your resume has been generated successfully.
-          You can download it from your profile page.
-        </p>
-        <a href="http://localhost:5173/student/profile"
-           style="display:block;text-align:center;background:#0f172a;color:white;
-                  padding:14px 24px;border-radius:8px;text-decoration:none;
-                  font-size:14px;font-weight:600;margin-top:24px;">
-          Download Resume →
-        </a>
-        <div style="margin-top:32px;padding-top:20px;border-top:1px solid #e2e8f0;
-                    font-size:12px;color:#94a3b8;text-align:center;">
-          PlacementPortal
-        </div>
+
+        {_footer()}
       </div>
     </body>
     </html>
@@ -333,3 +354,4 @@ def notify_student_resume_ready(task: dict) -> None:
         subject='Your PlacementPortal resume is ready to download',
         html_body=html
     )
+    log.info('Student %s notified — resume ready', student_email)
