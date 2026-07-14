@@ -27,6 +27,36 @@ _CARD_STYLE = """
   box-shadow: 0 4px 24px rgba(0,0,0,0.08);
 """
 
+def _header(emoji: str, title: str, subtitle: str = '') -> str:
+    return f"""
+    <div style="background:#0f172a;padding:32px;text-align:center;">
+      <div style="font-size:40px;margin-bottom:12px;">{emoji}</div>
+      <h1 style="color:#ffffff;font-size:22px;font-weight:700;margin:0;">{title}</h1>
+      {f'<p style="color:#94a3b8;font-size:14px;margin:8px 0 0;">{subtitle}</p>' if subtitle else ''}
+    </div>
+    """
+
+def _footer() -> str:
+    return f"""
+    <div style="background:#f8fafc;padding:20px 32px;text-align:center;
+                border-top:1px solid #e2e8f0;">
+      <p style="color:#94a3b8;font-size:12px;margin:0;">
+        PlacementPortal · This is an automated notification · Do not reply
+      </p>
+    </div>
+    """
+
+def _button(text: str, url: str, color: str = '#0f172a') -> str:
+    return f"""
+    <div style="text-align:center;margin:24px 0;">
+      <a href="{url}"
+         style="display:inline-block;background:{color};color:#ffffff;
+                padding:14px 32px;border-radius:10px;text-decoration:none;
+                font-size:15px;font-weight:600;letter-spacing:-0.2px;">
+        {text}
+      </a>
+    </div>
+    """
 def notify_recruiter_new_application(task: dict) -> None:
     """
     Called when a student applies to a listing.
@@ -43,73 +73,60 @@ def notify_recruiter_new_application(task: dict) -> None:
     """
 
     recruiter_email = task['recruiter_email']
+    recruiter_name  = task.get('recruiter_name', 'Recruiter')
     student_name    = task['student_name']
-    listing_title   = task['listing_title']
-    student_branch  = task.get('student_branch', '')
-    student_cgpa    = task.get('student_cgpa', 0)
     student_email   = task.get('student_email', '')
-
+    student_branch  = task.get('student_branch', '—')
+    student_cgpa    = task.get('student_cgpa', '—')
+    listing_title   = task['listing_title']
 
     html = f"""
     <!DOCTYPE html>
     <html>
-    <head><meta charset="UTF-8"></head>
-    <body style="font-family:system-ui,sans-serif;background:#f9fafb;margin:0;padding:40px 16px;">
-      <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;
-                  padding:32px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"></head>
+    <body style="{_BASE_STYLE}">
+      <div style="{_CARD_STYLE}">
 
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
-          <div style="width:40px;height:40px;background:#0f172a;border-radius:10px;
-                      display:flex;align-items:center;justify-content:center;">
-            <span style="color:white;font-size:18px;">📋</span>
+        {_header('📋', 'New Application Received', listing_title)}
+
+        <div style="padding:32px;">
+          <p style="color:#334155;font-size:15px;line-height:1.6;margin:0 0 24px;">
+            Hi <strong>{recruiter_name}</strong>,<br><br>
+            <strong>{student_name}</strong> has applied for your listing.
+            Here are their details:
+          </p>
+
+          <!-- Applicant card -->
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;
+                      padding:20px;margin-bottom:24px;">
+            <table style="width:100%;border-collapse:collapse;">
+              <tr>
+                <td style="padding:8px 0;color:#64748b;font-size:13px;width:35%;">
+                  Full Name
+                </td>
+                <td style="padding:8px 0;color:#0f172a;font-weight:600;font-size:13px;">
+                  {student_name}
+                </td>
+              </tr>
+              <tr style="border-top:1px solid #e2e8f0;">
+                <td style="padding:8px 0;color:#64748b;font-size:13px;">Email</td>
+                <td style="padding:8px 0;color:#0f172a;font-size:13px;">{student_email}</td>
+              </tr>
+              <tr style="border-top:1px solid #e2e8f0;">
+                <td style="padding:8px 0;color:#64748b;font-size:13px;">Branch</td>
+                <td style="padding:8px 0;color:#0f172a;font-size:13px;">{student_branch}</td>
+              </tr>
+              <tr style="border-top:1px solid #e2e8f0;">
+                <td style="padding:8px 0;color:#64748b;font-size:13px;">CGPA</td>
+                <td style="padding:8px 0;color:#0f172a;font-size:13px;">{student_cgpa}</td>
+              </tr>
+            </table>
           </div>
-          <div>
-            <div style="font-size:18px;font-weight:700;color:#0f172a;">New Application</div>
-            <div style="font-size:13px;color:#64748b;">PlacementPortal</div>
-          </div>
+
+          {_button('View Applicants →', f'{APP_URL}/recruiter/listings')}
         </div>
 
-        <p style="color:#334155;font-size:15px;line-height:1.6;">
-          You have received a new application for <strong>{listing_title}</strong>.
-        </p>
-
-        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;
-                    padding:20px;margin:20px 0;">
-          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;
-                      color:#94a3b8;margin-bottom:12px;">Applicant Details</div>
-          <table style="width:100%;border-collapse:collapse;">
-            <tr>
-              <td style="padding:6px 0;color:#64748b;font-size:13px;width:40%;">Name</td>
-              <td style="padding:6px 0;color:#0f172a;font-weight:600;font-size:13px;">
-                {student_name}
-              </td>
-            </tr>
-            <tr>
-              <td style="padding:6px 0;color:#64748b;font-size:13px;">Email</td>
-              <td style="padding:6px 0;color:#0f172a;font-size:13px;">{student_email}</td>
-            </tr>
-            <tr>
-              <td style="padding:6px 0;color:#64748b;font-size:13px;">Branch</td>
-              <td style="padding:6px 0;color:#0f172a;font-size:13px;">{student_branch}</td>
-            </tr>
-            <tr>
-              <td style="padding:6px 0;color:#64748b;font-size:13px;">CGPA</td>
-              <td style="padding:6px 0;color:#0f172a;font-size:13px;">{student_cgpa}</td>
-            </tr>
-          </table>
-        </div>
-
-        <a href="http://localhost:5173/recruiter/listings"
-           style="display:inline-block;background:#0f172a;color:white;padding:12px 24px;
-                  border-radius:8px;text-decoration:none;font-size:14px;font-weight:600;
-                  margin-top:8px;">
-          View Applicants →
-        </a>
-
-        <div style="margin-top:32px;padding-top:20px;border-top:1px solid #e2e8f0;
-                    font-size:12px;color:#94a3b8;text-align:center;">
-          PlacementPortal · This is an automated notification
-        </div>
+        {_footer()}
       </div>
     </body>
     </html>
@@ -117,13 +134,18 @@ def notify_recruiter_new_application(task: dict) -> None:
 
     _send(
         to        = recruiter_email,
+        subject   = f'📋 New application: {student_name} → {listing_title}',
+        html_body = html,
+    )
+    log.info('Recruiter %s notified about new application from %s', recruiter_email, student_name)
+
+    _send(
+        to        = recruiter_email,
         subject   = f'New application: {student_name} applied for {listing_title}',
         html_body = html,
     )
-
     log.info(
-        'Recruiter notified: %s about %s',
-        recruiter_email, student_name,
+        'Recruiter notified: %s about %s',recruiter_email, student_name,
     )
 
 
@@ -147,100 +169,119 @@ def notify_student_status_change(task: dict) -> None:
     status        = task['status'],
     
 
-    status_config = {
-        'shortlisted' : {
-            'color':   '#2563EB',
+    STATUS_MAP = {
+        'shortlisted': {
+            'emoji':   '🎉',
+            'label':   'Shortlisted',
+            'color':   '#2563eb',
             'bg':      '#eff6ff',
             'border':  '#bfdbfe',
-            'message': 'Congratulations! You have been shortlisted for the next round. Expect to hear from the recruiter soon with further details.',
-            'label':   'Shortlisted',
+            'subject': f' You have been shortlisted for {listing_title}',
+            'heading': 'Congratulations! You\'ve been shortlisted.',
+            'message': (
+                f'Great news! Your application for <strong>{listing_title}</strong> at '
+                f'<strong>{company_name}</strong> has been reviewed and you have been '
+                f'<strong>shortlisted</strong> for the next round. '
+                f'Expect to hear from the recruiter soon with further details about the process.'
+            ),
+            'tip': ' Tip: Prepare for the next round by reviewing the job description and your resume.',
         },
-        'selected' : {
+        'selected': {
+            'emoji':   '🏆',
+            'label':   'Selected',
             'color':   '#16a34a',
             'bg':      '#f0fdf4',
             'border':  '#bbf7d0',
-            'message': 'Congratulations! You have been selected for this role. The recruiter will contact you with the offer details and next steps.',
-            'label':   'Selected',
+            'subject': f' You have been selected for {listing_title} at {company_name}!',
+            'heading': 'Congratulations! You\'ve been selected!',
+            'message': (
+                f'Excellent news! You have been <strong>selected</strong> for the role of '
+                f'<strong>{listing_title}</strong> at <strong>{company_name}</strong>. '
+                f'The recruiter will reach out to you shortly with the offer letter and '
+                f'details about the onboarding process.'
+            ),
+            'tip': ' Well done! Make sure to check your email for the offer letter.',
         },
-        'rejected' : {
+        'rejected': {
+            'emoji':   '📝',
+            'label':   'Not Selected',
             'color':   '#dc2626',
             'bg':      '#fef2f2',
             'border':  '#fecaca',
-            'message': 'Thank you for applying. Unfortunately, you were not selected for this role at this time. Keep applying — the right opportunity is out there!',
-            'label':   'Not Selected',
+            'subject': f'Update on your application for {listing_title}',
+            'heading': 'Application Status Update',
+            'message': (
+                f'Thank you for applying for <strong>{listing_title}</strong> at '
+                f'<strong>{company_name}</strong>. After careful consideration, '
+                f'we regret to inform you that you have not been selected for this role at this time. '
+                f'We encourage you to keep applying — the right opportunity is just around the corner!'
+            ),
+            'tip': ' Don\'t give up! Browse more listings and keep applying.',
         },
     }
 
-
-    cfg = status_config.get(status, {
+    cfg = STATUS_MAP.get(status, {
+        'emoji':   '📬',
+        'label':   status.capitalize(),
         'color':   '#6b7280',
         'bg':      '#f9fafb',
         'border':  '#e5e7eb',
-        'message': f'Your application status has been updated to: {status}',
-        'label':   status.capitalize(),
+        'subject': f'Application update: {listing_title}',
+        'heading': 'Application Status Updated',
+        'message': f'Your application status for <strong>{listing_title}</strong> has been updated to <strong>{status}</strong>.',
+        'tip':     '',
     })
 
     html = f"""
     <!DOCTYPE html>
     <html>
-    <head><meta charset="UTF-8"></head>
-    <body style="font-family:system-ui,sans-serif;background:#f9fafb;margin:0;padding:40px 16px;">
-      <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;
-                  padding:32px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"></head>
+    <body style="{_BASE_STYLE}">
+      <div style="{_CARD_STYLE}">
 
-        <!-- Header -->
-        <div style="text-align:center;margin-bottom:28px;">
-          <div style="font-size:48px;margin-bottom:12px;">{cfg['emoji']}</div>
-          <div style="font-size:22px;font-weight:700;color:#0f172a;">Application Update</div>
-          <div style="font-size:13px;color:#64748b;margin-top:4px;">PlacementPortal</div>
-        </div>
+        {_header(cfg['emoji'], cfg['heading'])}
 
-        <p style="color:#334155;font-size:15px;line-height:1.6;">
-          Hi <strong>{student_name}</strong>,
-        </p>
-        <p style="color:#334155;font-size:15px;line-height:1.6;">
-          Your application for <strong>{listing_title}</strong> at
-          <strong>{company_name}</strong> has been reviewed.
-        </p>
+        <div style="padding:32px;">
+          <p style="color:#334155;font-size:15px;line-height:1.6;margin:0 0 20px;">
+            Hi <strong>{student_name}</strong>,
+          </p>
 
-        <!-- Status box -->
-        <div style="background:{cfg['bg']};border:1px solid {cfg['border']};
-                    border-radius:12px;padding:20px;margin:24px 0;text-align:center;">
-          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;
-                      color:#94a3b8;margin-bottom:8px;">Your Status</div>
-          <div style="font-size:28px;font-weight:800;color:{cfg['color']};">
-            {cfg['label']}
+          <!-- Status badge -->
+          <div style="background:{cfg['bg']};border:1px solid {cfg['border']};
+                      border-radius:12px;padding:20px;text-align:center;margin-bottom:24px;">
+            <p style="color:#64748b;font-size:11px;text-transform:uppercase;
+                      letter-spacing:0.1em;margin:0 0 8px;">Application Status</p>
+            <p style="color:{cfg['color']};font-size:26px;font-weight:800;margin:0;">
+              {cfg['label']}
+            </p>
+            <p style="color:#64748b;font-size:13px;margin:8px 0 0;">
+              {listing_title} · {company_name}
+            </p>
           </div>
+
+          <!-- Message -->
+          <p style="color:#334155;font-size:14px;line-height:1.7;
+                    background:#f8fafc;border-radius:10px;padding:16px;margin:0 0 16px;">
+            {cfg['message']}
+          </p>
+
+          <!-- Tip -->
+          {f'<p style="color:#64748b;font-size:13px;line-height:1.6;margin:0 0 24px;">{cfg["tip"]}</p>' if cfg.get('tip') else ''}
+
+          {_button('View My Applications →', f'{APP_URL}/student/dashboard')}
         </div>
 
-        <p style="color:#334155;font-size:14px;line-height:1.7;
-                  background:#f8fafc;border-radius:8px;padding:16px;">
-          {cfg['message']}
-        </p>
-
-        <a href="http://localhost:5173/student/dashboard"
-           style="display:block;text-align:center;background:#0f172a;color:white;
-                  padding:14px 24px;border-radius:8px;text-decoration:none;
-                  font-size:14px;font-weight:600;margin-top:24px;">
-          View My Applications →
-        </a>
-
-        <div style="margin-top:32px;padding-top:20px;border-top:1px solid #e2e8f0;
-                    font-size:12px;color:#94a3b8;text-align:center;">
-          PlacementPortal · Do not reply to this email
-        </div>
+        {_footer()}
       </div>
     </body>
     </html>
     """
-
     _send(
-        to = student_email,
-        subject=f'Application update: {listing_title} at {company_name}',
-        html_body=html,
+        to        = student_email,
+        subject   = cfg['subject'],
+        html_body = html,
     )
-
-    log.info('Student notified: %s — status: %s', student_email, status)
+    log.info('Student %s notified — status: %s for %s', student_email, status, listing_title)
 
 def notify_student_resume_ready(task: dict) -> None:
     """
