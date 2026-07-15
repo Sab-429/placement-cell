@@ -316,7 +316,7 @@ export default function RecruiterProfile() {
                 'Add location to attract local talent',
               ].map((tip, i) => (
                 <li key={i} className="flex items-start gap-2 text-xs text-blue-800">
-                  <Check className="w-3.5 h-3.5 mt-0.5 text-blue-500 flex-shrink-0" />
+                  <Check className="w-3.5 h-3.5 mt-0.5 text-blue-500 shrink-0" />
                   {tip}
                 </li>
               ))}
@@ -335,7 +335,7 @@ export default function RecruiterProfile() {
               ].map(({ icon: Icon, value, label }) => (
                 <div key={label} className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center
-                                  justify-center flex-shrink-0">
+                                  justify-center shrink-0">
                     <Icon className="w-3.5 h-3.5 text-gray-400" />
                   </div>
                   <div className="min-w-0">
