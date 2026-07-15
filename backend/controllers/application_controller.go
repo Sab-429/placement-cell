@@ -31,7 +31,14 @@ func GetApplicationsForListing(c *gin.Context) {
 	}
 
 	var apps []models.Application
-	config.DB.Preload("student").Where("listing_id = ?", c.Param("id")).Find(&apps)
+	if err := config.DB.
+		Preload("Student").
+		Where("listing_id = ?", c.Param("id")).
+		Order("created_at DESC").
+		Find(&apps).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+		return
+	}
 	c.JSON(http.StatusOK, apps)
 }
 
