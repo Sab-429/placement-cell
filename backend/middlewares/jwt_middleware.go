@@ -35,6 +35,8 @@ func Auth(allowedRoles ...string) gin.HandlerFunc {
 				}
 			}
 			if !allowed {
+				fmt.Println("JWT Role:", claims.Role)
+				fmt.Println("Allowed Roles:", allowedRoles)
 				c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "access denied"})
 				return
 			}
