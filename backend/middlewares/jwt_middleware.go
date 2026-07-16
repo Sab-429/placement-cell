@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-
+	"log"
 	"backend/utils"
 
 	"github.com/gin-gonic/gin"
@@ -20,10 +20,13 @@ func Auth(allowedRoles ...string) gin.HandlerFunc {
 		tokenStr := strings.TrimPrefix(header, "Bearer ")
 		claims, err := utils.ParseToken(tokenStr)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-			return
-		}
-
+            // Log which error it is — helps debug intermittent issues
+            log.Printf("AUTH FAILED: %v | token_len=%d", err, len(tokenStr))
+            c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+                "error": "invalid or expired token: " + err.Error(),
+            })
+            return
+        }
 		fmt.Printf("Rec tok: %s len: %d\n", tokenStr, len(tokenStr))
 
 		if len(allowedRoles) > 0 {
