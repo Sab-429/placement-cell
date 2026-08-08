@@ -8,7 +8,8 @@ services:
       POSTGRES_USER: portal
       POSTGRES_PASSWORD: Sabya@#429
       POSTGRES_DB: placement
-
+    ports:
+      - "5432:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
 
@@ -22,6 +23,117 @@ services:
 
     
   redis:
+  version: "3.9"
+
+services:
+
+  # ── PostgreSQL ─────────────────────────────────────────────────────────────
+  # Primary database. Data persists in a named Docker volume so it
+  # survives container restarts.
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER:     portal
+      POSTGRES_PASSWORD: StrongPass123!
+      POSTGRES_DB:       placement
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U portal -d placement"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  # ── Redis ──────────────────────────────────────────────────────────────────
+  # Used as both a job queue (worker tasks) and cache.
+  redis:
     image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - internal
+
+  # ── Go API ─────────────────────────────────────────────────────────────────
+  # Built from ./backend. Depends on postgres and redis being healthy
+  # before it starts (thanks to condition: service_healthy).
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: .env.global
+    ports:
+      - "8080:8080"       # only needed for direct API access during dev
+    volumes:
+      - ./storage:/app/storage   # shared storage volume with the worker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - internal
+      - public
+
+  # ── Python Worker ──────────────────────────────────────────────────────────
+  # Pulls tasks from Redis and generates PDFs / sends emails.
+  # Shares the same storage volume as the API so it can write resume PDFs
+  # that the API then serves.
+  worker:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: .env.global
+    volumes:
+      - ./storage:/app/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - internal
+
+  # ── React Frontend ─────────────────────────────────────────────────────────
+  # Built by Vite, served by Nginx. Nginx also proxies /api → api:8080
+  # so the browser never needs to know the API's address.
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api    # relative URL — Nginx proxies it
+    restart: unless-stopped
+    ports:
+      - "80:80"             # expose to the outside world
+    depends_on:
+      - api
+    networks:
+      - public
+
+volumes:
+  pg_data:     # postgres data
+  redis_data:  # redis persistence
+
+networks:
+  internal:    # api, worker, postgres, redis — not reachable from outside
+    driver: bridge
+  public:      # frontend, api — reachable from outside
+    driver: bridge  image: redis:7-alpine
+    ports:
+      - "6379:6379"
     
+
+
     
