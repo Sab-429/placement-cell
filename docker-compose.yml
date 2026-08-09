@@ -1,31 +1,6 @@
 version: "3.9"
 
 services:
-  postgres:
-    image: postgres:16-alpine
-    restart: unless-stopeed
-    environment:
-      POSTGRES_USER: portal
-      POSTGRES_PASSWORD: Sabya@#429
-      POSTGRES_DB: placement
-    ports:
-      - "5432:5432"
-    volumes:
-      - pg_data:/var/lib/postgresql/data
-
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U portal -d placement"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - internal
-
-    
-  redis:
-  version: "3.9"
-
-services:
 
   # ── PostgreSQL ─────────────────────────────────────────────────────────────
   # Primary database. Data persists in a named Docker volume so it
@@ -130,10 +105,5 @@ networks:
   internal:    # api, worker, postgres, redis — not reachable from outside
     driver: bridge
   public:      # frontend, api — reachable from outside
-    driver: bridge  image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    
-
-
+    driver: bridge
     
