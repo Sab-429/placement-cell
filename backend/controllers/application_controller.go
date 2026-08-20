@@ -75,21 +75,6 @@ func UpdateApplicationStatus(c *gin.Context) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "access denied"})
 		return
 	}
-	log.Println("Reached queue section")
-
-
-	//test
-if queueClient == nil {
-    log.Println("queueClient is NIL")
-} else {
-    log.Println("queueClient is initialized")
-}
-
-log.Println("Student Email:", app.Student.Email)
-log.Println("Student Name:", app.Student.Name)
-log.Println("Status:", body.Status)
-
-
 	config.DB.Model(&app).Update("status",body.Status)
 
 	if queueClient != nil && app.Student.Email != "" {
