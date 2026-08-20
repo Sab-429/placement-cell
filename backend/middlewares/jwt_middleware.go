@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 	"log"
@@ -16,7 +15,6 @@ func Auth(allowedRoles ...string) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing token"})
 			return
 		}
-
 		tokenStr := strings.TrimPrefix(header, "Bearer ")
 		claims, err := utils.ParseToken(tokenStr)
 		if err != nil {
@@ -27,7 +25,6 @@ func Auth(allowedRoles ...string) gin.HandlerFunc {
             })
             return
         }
-		fmt.Printf("Rec tok: %s len: %d\n", tokenStr, len(tokenStr))
 
 		if len(allowedRoles) > 0 {
 			allowed := false
@@ -38,8 +35,6 @@ func Auth(allowedRoles ...string) gin.HandlerFunc {
 				}
 			}
 			if !allowed {
-				fmt.Println("JWT Role:", claims.Role)
-				fmt.Println("Allowed Roles:", allowedRoles)
 				c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "access denied"})
 				return
 			}
