@@ -19,7 +19,9 @@ import json
 import logging
 import time
 import redis
-from config import QUEUE_KEY, REDIS_URL
+from config import QUEUE_KEY, REDIS_URL, STOARGE_PATH
+
+
 from tasks.resume import generate_resume
 from tasks.email  import send_status_email
 
@@ -45,6 +47,8 @@ TASK_ROUTER = {
     'notify_student_status_change':    notify_student_status_change,
     'notify_student_resume_ready':     notify_student_resume_ready,
 }
+
+
 
 def connect_redis(retries: int= 5,  delay: int = 3):
     """Connect to Redis with retry — useful when worker starts before Redis."""

@@ -14,7 +14,6 @@ Flow:
 import json
 import logging
 import os
-
 import psycopg2
 import psycopg2.extras
 from jinja2 import Environment, FileSystemLoader

@@ -15,19 +15,20 @@ load_dotenv(
 #Database
 
 DB_CONFIG = {
-    'host':     os.getenv('DB_HOST',     'localhost'),
-    'port':     int(os.getenv('DB_PORT', '5432')),
-    'user':     os.getenv('DB_USER',     'portal'),
-    'password': os.getenv('DB_PASSWORD', 'portalpass'),
-    'dbname':   os.getenv('DB_NAME',     'placement'),
+    'host':     os.getenv('DB_HOST'),
+    'port':     int(os.getenv('DB_PORT')),
+    'user':     os.getenv('DB_USER'),
+    'password': os.getenv('DB_PASSWORD'),
+    'dbname':   os.getenv('DB_NAME'),
+    'sslmode':  os.getenv('DB_SSLMODE'),
 }
 
-REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+REDIS_URL = os.getenv('REDIS_URL')
 QUEUE_KEY = 'tasks:worker'
 
-STORAGE_PATH = os.getenv('STORAGE_PATH', './storage')
+STORAGE_PATH = os.getenv('STORAGE_PATH')
 
 # ── Resend ─────────────────────────────────────────────────────────────
-RESEND_API_KEY = os.getenv('RESEND_API_KEY', '')
-EMAIL_FROM     = os.getenv('EMAIL_FROM', 'Auth <auth@sabyasachisaha.in>')
-APP_URL        = os.getenv('APP_URL', 'http://localhost:5173')
+RESEND_API_KEY = os.getenv('RESEND_API_KEY')
+EMAIL_FROM     = os.getenv('EMAIL_FROM')
+APP_URL        = os.getenv('APP_URL')
