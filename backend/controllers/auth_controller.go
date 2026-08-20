@@ -21,12 +21,7 @@ func RegisterStudent(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return 
 	}
-	hash, err := bcrypt.GenerateFromPassword([]byte(input.Password), 12)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "couldnot hashed password"})
-		return 
-	}
-
+	hash, _ := bcrypt.GenerateFromPassword([]byte(input.Password), 12)
 	student := models.Student{
 		Name:         input.Name,
 		Email:        input.Email,
@@ -46,13 +41,12 @@ func RegisterRecruiter(c *gin.Context) {
 		Name     string `json:"name"     binding:"required"`
 		Email    string `json:"email"    binding:"required,email"`
 		Password string `json:"password" binding:"required,min=6"`
-		Domain   string `json:"domain"`
+		Domain   string `json:"domain"   binding:"required,domain"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
 	hash, _ := bcrypt.GenerateFromPassword([]byte(input.Password), 12)
 	recruiter := models.Recruiter{
 		Name:         input.Name,
@@ -60,23 +54,15 @@ func RegisterRecruiter(c *gin.Context) {
 		PasswordHash: string(hash),
 		Domain:       input.Domain,
 	}
-
 	if err := config.DB.Create(&recruiter).Error; err != nil {
 		c.JSON(http.StatusConflict, gin.H{"error": "email already registered"})
 		return
 	}
-
-	token, err := utils.GenerateToken(recruiter.ID, "recruiter")
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	}
 	c.JSON(http.StatusCreated, gin.H{
-		"token":   token,
 		"role":    "recruiter",
 		"user_id": recruiter.ID,
 	})
 }
-
 func LoginStudent(c *gin.Context) {
 	var input struct {
 		Email    string `json:"email"    binding:"required,email"`
@@ -99,7 +85,6 @@ func LoginStudent(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
 		return
 	}
-
 	token, _ := utils.GenerateToken(student.ID,"student")
 	c.JSON(http.StatusOK, gin.H{
 		"token": token,
