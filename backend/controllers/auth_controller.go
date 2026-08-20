@@ -36,13 +36,7 @@ func RegisterStudent(c *gin.Context) {
 		c.JSON(http.StatusConflict, gin.H{"error": "email already in use"})
 		return 
 	}
-	token, err := utils.GenerateToken(student.ID, "student")
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return 
-	}
 	c.JSON(http.StatusCreated, gin.H {
-		"token" : token,
 		"role" : "student",
 		"user_id" : student.ID,
 	})
@@ -72,7 +66,10 @@ func RegisterRecruiter(c *gin.Context) {
 		return
 	}
 
-	token, _ := utils.GenerateToken(recruiter.ID, "recruiter")
+	token, err := utils.GenerateToken(recruiter.ID, "recruiter")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
 	c.JSON(http.StatusCreated, gin.H{
 		"token":   token,
 		"role":    "recruiter",
