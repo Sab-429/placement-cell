@@ -41,7 +41,7 @@ func RegisterRecruiter(c *gin.Context) {
 		Name     string `json:"name"     binding:"required"`
 		Email    string `json:"email"    binding:"required,email"`
 		Password string `json:"password" binding:"required,min=6"`
-		Domain   string `json:"domain"   binding:"required,domain"`
+		Domain   string `json:"domain"   binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -109,6 +109,7 @@ func LoginRecruiter(c*gin.Context) {
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(recruiter.PasswordHash),[]byte(input.Password)); err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+		return
 	}
 	token, _ := utils.GenerateToken(recruiter.ID, "recruiter")
 	c.JSON(http.StatusOK, gin.H{

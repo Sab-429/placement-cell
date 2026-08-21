@@ -142,7 +142,7 @@ func DownloadResume(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "resume not available"})
 		return
 	}
-	path := filepath.Join(os.Getenv("STORAGE_PATH"), "resume", student.ResumeFileName)
+	path := filepath.Join(os.Getenv("STORAGE_PATH"), "resumes", student.ResumeFileName)
 	c.FileAttachment(path, student.ResumeFileName)
 }
 
@@ -156,6 +156,7 @@ func GenerateResume(c *gin.Context) {
 	config.DB.Model(&models.Student{}).Where("id=?",callerID).Update("resume_ready",false)
 	if err := pushResumeTask(callerID.(uint)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "queue unavailable"})
+		return
 	}
 	c.JSON(http.StatusAccepted, gin.H{"message": "resume generation queued"})
 }

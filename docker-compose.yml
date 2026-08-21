@@ -12,6 +12,8 @@ services:
       POSTGRES_USER:     portal
       POSTGRES_PASSWORD: StrongPass123!
       POSTGRES_DB:       placement
+    ports:
+      - "5432:5432"   # so local `go run` / worker can reach Postgres
     volumes:
       - pg_data:/var/lib/postgresql/data
     healthcheck:
@@ -50,7 +52,7 @@ services:
     ports:
       - "8080:8080"       # only needed for direct API access during dev
     volumes:
-      - ./storage:/app/storage   # shared storage volume with the worker
+      - ./backend/storage:/app/storage   # same folder the API uses locally
     depends_on:
       postgres:
         condition: service_healthy
@@ -71,7 +73,7 @@ services:
     restart: unless-stopped
     env_file: .env.global
     volumes:
-      - ./storage:/app/storage
+      - ./backend/storage:/app/storage
     depends_on:
       postgres:
         condition: service_healthy

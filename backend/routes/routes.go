@@ -58,6 +58,7 @@ func SetUpRoutes(r *gin.Engine) {
 		admin.DELETE("/students/:id",   controllers.AdminDeleteStudent)
 		admin.GET("/recruiters",        controllers.AdminGetRecruiters)
 		admin.DELETE("/recruiters/:id", controllers.AdminDeleteRecruiter)
+		admin.GET("/listings",          controllers.AdminGetListings)
 		admin.DELETE("/listings/:id",   controllers.AdminDeleteListing)
 		admin.GET("/metrics",           controllers.AdminGetMetrics)
 		admin.GET("/health",            controllers.AdminHealthCheck)

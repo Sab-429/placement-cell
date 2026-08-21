@@ -20,6 +20,12 @@ func AdminGetRecruiters(c *gin.Context) {
 	c.JSON(http.StatusOK, recruiters)
 }
 
+func AdminGetListings(c *gin.Context) {
+	var listings []models.Listing
+	config.DB.Preload("Recruiter").Order("created_at DESC").Find(&listings)
+	c.JSON(http.StatusOK, listings)
+}
+
 func AdminDeleteStudent(c *gin.Context) {
 	config.DB.Delete(&models.Student{}, c.Param("id"))
 	c.JSON(http.StatusOK, gin.H{"message":"student deleted"})
@@ -27,7 +33,7 @@ func AdminDeleteStudent(c *gin.Context) {
 
 func AdminDeleteRecruiter(c *gin.Context) {
 	config.DB.Delete(&models.Recruiter{}, c.Param("id"))
-	c.JSON(http.StatusOK, gin.H{"message":"student deleted"})
+	c.JSON(http.StatusOK, gin.H{"message":"recruiter deleted"})
 }
 
 func AdminDeleteListing(c *gin.Context) {

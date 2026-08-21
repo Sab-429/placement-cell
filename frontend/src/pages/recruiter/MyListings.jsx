@@ -14,7 +14,7 @@ export default function MyListings() {
     }, [userId])
 
     const toggleOpen = async (listings) => {
-        await client.put(`/listings/${listings.id}`, {is_open: !listings.is_open})
+        await client.put(`/recruiter/listings/${listings.id}`, {is_open: !listings.is_open})
         setListings((ls) => ls.map((l) => l.id === listings.id ? {...l, is_open: !l.is_open} : l))
     }
 

@@ -12,6 +12,7 @@ import CreateListing from './pages/recruiter/CreateListing'
 import MyListings from './pages/recruiter/MyListings'
 import RecruiterProfile from './pages/recruiter/Profile'
 import ListingApplicants  from './pages/recruiter/ListingApplicants'
+import AdminDashboard from './pages/admin/Dashboard'
 import { useEffect } from 'react'
 import { toast } from 'sonner'
 
@@ -86,6 +87,10 @@ export default function App() {
                     <Route path="listings" element={<MyListings />} />
                     <Route path="profile" element={<RecruiterProfile />} />
                     <Route path="listings/:id/applicants" element={<ListingApplicants />} />
+                </Route>
+
+                <Route path="/admin" element={<ProtectedRoute role="admin" />}>
+                    <Route path="dashboard" element={<AdminDashboard />} />
                 </Route>
                 <Route path="*" element={<Navigate to={home} replace />} />
             </Routes>

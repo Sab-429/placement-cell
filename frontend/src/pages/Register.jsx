@@ -16,7 +16,8 @@ import { z } from 'zod'
 const schema = z.object({
     name: z.string().min(2, 'Name must be atleats 2 characters'),
     email: z.string().email('Invalid Email address'),
-    password: z.string().min(6, 'Password must be atleast 6 characters')
+    password: z.string().min(6, 'Password must be atleast 6 characters'),
+    domain: z.string().optional(),
 })
 
 const ROLES = [
@@ -41,7 +42,14 @@ export default function Register() {
 
     const onSubmit = async (data) => {
         try {
-            await client.post(`/auth/${role}/register`, { ...data, role })
+            if (role === 'recruiter' && (!data.domain || data.domain.trim().length < 2)) {
+                toast.error('Company domain is required for recruiters')
+                return
+            }
+            const payload = role === 'recruiter'
+                ? { name: data.name, email: data.email, password: data.password, domain: data.domain.trim() }
+                : { name: data.name, email: data.email, password: data.password }
+            await client.post(`/auth/${role}/register`, payload)
             toast.success('Account created')
             navigate(`/login`, { replace: true })
         } catch (err) {
@@ -144,6 +152,21 @@ export default function Register() {
                                         <p className="text-xs text-destructive">{errors.name.message}</p>
                                     )}
                                 </div>
+
+                                {role === 'recruiter' && (
+                                    <div className="space-y-1.5">
+                                        <Label htmlFor="domain">Company domain</Label>
+                                        <Input
+                                            id="domain"
+                                            placeholder="example.com"
+                                            {...register('domain')}
+                                            className={errors.domain ? 'border-destructive' : ''}
+                                        />
+                                        {errors.domain && (
+                                            <p className="text-xs text-destructive">{errors.domain.message}</p>
+                                        )}
+                                    </div>
+                                )}
 
                                 <div className="space-y-1.5">
                                     <Label htmlFor="email">Email</Label>

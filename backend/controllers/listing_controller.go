@@ -3,15 +3,26 @@ package controllers
 import (
 	"backend/config"
 	"backend/models"
+	"errors"
 	"net/http"
 	"strconv"
 	"time"
+
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func GetAllListing(c *gin.Context) {
 	var listings []models.Listing
-	query := config.DB.Preload("Recruiter").Where("is_open = true")
+	query := config.DB.Preload("Recruiter")
+
+	// Public browse: only open listings. Recruiter dashboards pass company_id
+	// and must still see their closed posts.
+	if cid := c.Query("company_id"); cid != "" {
+		query = query.Where("recruiter_id = ?", cid)
+	} else {
+		query = query.Where("is_open = ?", true)
+	}
 
 	if jt := c.Query("job_type"); jt != "" {
 		query = query.Where("job_type = ?",jt)
@@ -21,9 +32,6 @@ func GetAllListing(c *gin.Context) {
 	}
 	if sal := c.Query("salary_min"); sal != "" {
 		query = query.Where("salary_min >= ?", sal)
-	}
-	if cid := c.Query("company_id"); cid != "" {
-		query = query.Where("recruiter_id = ?", cid)
 	}
 	if exp := c.Query("experience"); exp != "" {
 		query = query.Where("experience_years <= ?", exp)
@@ -106,7 +114,7 @@ func CreateListing(c *gin.Context) {
 }
 
 func UpdateListing(c *gin.Context) {
-	recruiterID, _ := c.Get("User_id")
+	recruiterID, _ := c.Get("user_id")
 
 	var listing models.Listing
 	if err := config.DB.First(&listing, c.Param("id")).Error; err != nil {
@@ -127,7 +135,7 @@ func UpdateListing(c *gin.Context) {
 
 func DeleteListing(c *gin.Context) {
 	if err := config.DB.Delete(&models.Listing{}, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusOK, gin.H{"error" : "delete failed"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error" : "delete failed"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message":"listing deleted"})
@@ -143,6 +151,10 @@ func ApplyToListing(c *gin.Context) {
 		c.JSON(http.StatusConflict, gin.H{"error": "you have already applied"})
 		return
 	}
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "db error"})
+		return
+	}
 
 	var listing models.Listing
 	if err := config.DB.Preload("Recruiter").First(&listing, listingID).Error; err != nil || !listing.IsOpen {
@@ -154,7 +166,8 @@ func ApplyToListing(c *gin.Context) {
 	app := models.Application {
 		StudentID: studentID.(uint),
 		ListingID: uint(listingID),
-		Status: "applied",
+		Status:    "applied",
+		AppliedAt: time.Now(),
 	}
 	config.DB.Create(&app)
 
