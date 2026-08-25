@@ -3,12 +3,14 @@ package controllers
 import (
 	"backend/config"
 	"backend/models"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
@@ -97,13 +99,20 @@ func CreateListing(c *gin.Context) {
 
 	// Handle skills array
 	if rawSkills, ok := body["skills"].([]interface{}); ok {
-		skills := make(models.StringArray, 0, len(rawSkills))
+		skills := make([]string, 0, len(rawSkills))
 		for _, s := range rawSkills {
 			if str, ok := s.(string); ok && str != "" {
 				skills = append(skills, str)
 			}
 		}
-		listing.Skills = skills
+		jsonskills,err := json.Marshal(skills)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H {
+				"error" : "invalid skills",
+			})
+			return
+		}
+		listing.Skills = datatypes.JSON(jsonskills)
 	}
 
 	if err := config.DB.Create(&listing).Error; err != nil {

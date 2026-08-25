@@ -5,13 +5,6 @@ echo ========================================
 echo       Starting Placement App
 echo ========================================
 
-REM ========================================
-REM Start Postgres (Docker) so local API/worker can connect
-REM ========================================
-
-echo.
-echo Starting Postgres via Docker Compose...
-docker compose up -d postgres
 
 REM ========================================
 REM Start Redis inside WSL

@@ -76,6 +76,19 @@ def _mark_ready(user_id: int, filename: str) -> None:
         conn.close()
 
 
+def _parse_jsonb(value) -> any:
+    """Parse a JSONB value that may come as string, dict, list, or None."""
+    if value is None:
+        return None
+    if isinstance(value, (dict, list)):
+        return value
+    if isinstance(value, str):
+        try:
+            return json.loads(value)
+        except (json.JSONDecodeError, ValueError):
+            return None
+    return None
+
 def _to_list(value) -> list:
 
     """
@@ -93,22 +106,16 @@ def _to_list(value) -> list:
       None              → []                  (NULL column)
       '["React","Go"]'  → ["React", "Go"]    (JSON string — parse it)
     """
-    if value is None:
+    parsed = _parse_jsonb(value)
+
+    if parsed is None:
         return []
-
-    if isinstance(value, str):
-        try:
-            value = json.loads(value)
-        except (json.JSONDecodeError, ValueError):
-            return [value] if value.strip() else []
-
-    if isinstance(value, list):
-        return [str(item) for item in value if item is not None]
-
-    if isinstance(value, dict):
-        return [str(v) for v in value.values() if v is not None]
-
-    log.warning('Unexpected JSONB value type %s: %r — skipping', type(value).__name__, value)
+    if isinstance(parsed, list):
+        return [item for item in parsed if item is not None]
+    if isinstance(parsed, dict):
+        return list(parsed.values())
+    if isinstance(parsed, str) and parsed.strip():
+        return [parsed]
     return []
 
 
@@ -119,23 +126,26 @@ def _to_item_list(value) -> list:
 
     Returns a list of dicts safe to iterate in the template.
     """
-    if value is None:
+    parsed = _parse_jsonb(value)
+
+    if parsed is None:
         return []
 
-    if isinstance(value, str):
-        try:
-            value = json.loads(value)
-        except (json.JSONDecodeError, ValueError):
-            return []
+    if isinstance(parsed, list):
+        result= []
+        for item in parsed:
+            if isinstance(item, dict) and item.get('title', '').strip():
+                result.append(item)
+        return result
 
-    if isinstance(value, list):
-        return [item for item in value if isinstance(item, dict)]
-
-    if isinstance(value, dict):
-        return [v for v in value.values() if isinstance(v, dict)]
+    if isinstance(parsed, dict):
+        result = []
+        for item in parsed.values():
+            if isinstance(item, dict) and item.get('title', '').strip():
+                result.append(item)
+        return result
 
     return []
-
 
 def generate_resume(task: dict) -> None:
     """
@@ -159,14 +169,18 @@ def generate_resume(task: dict) -> None:
     template = env.get_template('resume.html')
     html_str = template.render(**student)
 
-    out_dir  = os.path.join(STORAGE_PATH, 'resumes')
+    log.info("Worker STORAGE_PATH = %s", STORAGE_PATH)
+
+    out_dir  = os.path.join(STORAGE_PATH, 'gen_resumes')
     os.makedirs(out_dir, exist_ok=True)
 
     filename = f'resume_{user_id}.pdf'
     out_path = os.path.join(out_dir, filename)
 
+    log.info("Generating PDF at: %s", out_path)
+
     HTML(string=html_str).write_pdf(out_path)
-    log.info('PDF written to %s', out_path)
+    log.info("PDF successfully written: %s", out_path)
 
     _mark_ready(user_id, filename)
 
@@ -179,3 +193,4 @@ def generate_resume(task: dict) -> None:
         })
     except Exception as e:
         log.warning('Could not send resume ready email: %s', e)
+

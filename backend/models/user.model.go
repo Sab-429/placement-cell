@@ -1,67 +1,10 @@
 package models
 
 import (
-	"database/sql/driver"
-	"encoding/json"
-	"fmt"
 	"time"
 	"gorm.io/gorm"
+ 	"gorm.io/datatypes"
 )
-
-type StringArray []string
-
-func (s StringArray) Value() (driver.Value, error) {
-	if s == nil {
-		return nil, nil
-	}
-	b, err := json.Marshal(s)
-	return string(b), err
-}
-
-func (s *StringArray) Scan(value interface{}) error {
-	if value == nil {
-		*s = StringArray{}
-		return nil
-	}
-	var bytes []byte
-	switch v := value.(type) {
-	case []byte:
-		bytes = v
-	case string:
-		bytes = []byte(v)
-	default:
-		return fmt.Errorf("StringArray: cannot scan type %T", value)
-	}
-	return json.Unmarshal(bytes, s)
-}
-
-type JSONB map[string]interface{}
-
-func (j JSONB) Value() (driver.Value, error) {
-	if j == nil {
-		return nil, nil
-	}
-	b, err := json.Marshal(j)
-	return string(b), err
-}
-
-func (j *JSONB) Scan(value interface{}) error {
-	if value == nil {
-		*j = JSONB{}
-		return nil
-	}
-
-	var bytes []byte
-	switch v := value.(type) {
-	case []byte:
-		bytes = v
-	case string:
-		bytes = []byte(v)
-	default:
-		return fmt.Errorf("JSONB: cannot scan %T", value)
-	}
-	return json.Unmarshal(bytes,j)
-}
 
 //student model section
 
@@ -81,11 +24,11 @@ type Student struct {
 	PFPFileName    string      `                               json:"pfp_file_name"`
 	ResumeFileName string      `                               json:"resume_file_name"`
 	ResumeReady    bool        `gorm:"default:false"           json:"resume_ready"`
-	Domains        StringArray `gorm:"type:text"               json:"domains"`
-	WorkExperience JSONB       `gorm:"type:jsonb"              json:"work_experience"`
-	Projects       JSONB       `gorm:"type:jsonb"              json:"projects"`
-	Education      JSONB       `gorm:"type:jsonb"              json:"education"`
-	Certificates   JSONB       `gorm:"type:jsonb"              json:"certificates"`
+	Domains      datatypes.JSON 		`gorm:"type:jsonb" 	  json:"domains"`
+	WorkExperience datatypes.JSON       `gorm:"type:jsonb"    json:"work_experience"`
+	Projects       datatypes.JSON       `gorm:"type:jsonb"    json:"projects"`
+	Education      datatypes.JSON       `gorm:"type:jsonb"    json:"education"`
+	Certificates   datatypes.JSON       `gorm:"type:jsonb"    json:"certificates"`
 }
 
 // Recruiter model section

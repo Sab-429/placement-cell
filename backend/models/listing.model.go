@@ -2,6 +2,8 @@ package models
 
 import (
 	"time"
+
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 type Listing struct {
@@ -14,7 +16,7 @@ type Listing struct {
 	JobType         string      `json:"job_type"`         // "internship" | "full-time"
 	IsOpen          bool        `gorm:"default:true"      json:"is_open"`
 	Description     string      `json:"description"`
-	Skills          StringArray `gorm:"type:text"         json:"skills"`
+	Skills          datatypes.JSON `gorm:"type:text"         json:"skills"`
 	RecruiterID     uint        `json:"recruiter_id"`
 	Recruiter       Recruiter   `json:"recruiter"`
 	Vacancies       int         `json:"vacancies"`

@@ -39,6 +39,7 @@ const normalize = (app) => {
     work_experience: field(s, 'work_experience') ?? [],
     projects: field(s, 'projects') ?? [],
     education: field(s, 'education') ?? [],
+    certificates: field(s, 'certificates') ?? [],
   }
   return {
     ...app,
@@ -378,6 +379,11 @@ export default function ListingApplicants() {
                                       {exp.time ?? exp.Time ?? ''}
                                     </p>
                                   </div>
+                                  {(exp.company ?? exp.company) && (
+                                    <p className='text-xs text-gray-700 mt-1 leading-relaxed'>
+                                      {exp.company ?? exp.company}
+                                    </p>
+                                  )}
                                   {(exp.description ?? exp.Description) && (
                                     <p className="text-xs text-gray-500 mt-1 leading-relaxed">
                                       {exp.description ?? exp.Description}
@@ -405,6 +411,42 @@ export default function ListingApplicants() {
                                     </p>
                                     <p className="text-xs text-gray-400">{p.time ?? ''}</p>
                                   </div>
+                                  {p.tech && (
+                                    <p className='text-xs text-gray-700 mt-1 leading-relaxed'>
+                                      {p.tech}
+                                    </p>
+                                  )}
+                                  {p.description && (
+                                    <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                                      {p.description}
+                                    </p>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* certificates */}
+                        {Array.isArray(s.certificates) && s.certificates.length > 0 && (
+                          <div className="px-5 pb-4">
+                            <p className="text-xs text-gray-400 uppercase tracking-wide mb-3">
+                              Certificates
+                            </p>
+                            <div className="space-y-2">
+                              {s.certificates.map((p, i) => (
+                                <div key = {i} className="bg-white rounded-lg border border-gray-100 px-4 py-3">
+                                  <div className="flex items-start justify-between">
+                                    <p className="font-medium text-sm text-gray-900">
+                                      {p.title ?? '—'}
+                                    </p>
+                                    <p className="text-xs text-gray-400">{p.date ?? ''}</p>
+                                  </div>
+                                  {p.issuer && (
+                                    <p className='text-xs text-gray-700 mt-1 leading-relaxed'>
+                                      {p.issuer}
+                                    </p>
+                                  )}
                                   {p.description && (
                                     <p className="text-xs text-gray-500 mt-1 leading-relaxed">
                                       {p.description}
