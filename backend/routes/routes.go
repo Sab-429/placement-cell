@@ -50,6 +50,8 @@ func SetUpRoutes(r *gin.Engine) {
 		recruiter.PUT("/listings/:id",                      controllers.UpdateListing)
 		recruiter.GET("/listings/:id/applications",         controllers.GetApplicationsForListing)
 		recruiter.PUT("/applications/:id/status",           controllers.UpdateApplicationStatus)
+		recruiter.GET("/students/:id/resume/download", 		controllers.DownloadResume)
+
 	}
 	//------admin route
 	admin := api.Group("/admin", middlewares.Auth("admin"))

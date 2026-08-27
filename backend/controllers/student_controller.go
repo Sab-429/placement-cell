@@ -3,14 +3,16 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
 	"backend/config"
 	"backend/models"
+
+	"github.com/gin-gonic/gin"
 )
 
 func GetStudentProfile(c *gin.Context) {
@@ -147,7 +149,7 @@ func UploadResume(c *gin.Context) {
 		return
 	}
 
-	filename := fmt.Sprintf("resume_%d.pdf", callerID.(uint))
+	filename := fmt.Sprintf("uploaded_resume_%d.pdf", callerID.(uint))
 	dir      := filepath.Join(os.Getenv("STORAGE_PATH"), "resumes")
 	os.MkdirAll(dir, 0755)
 
@@ -162,9 +164,14 @@ func UploadResume(c *gin.Context) {
 		Updates(map[string]interface{}{
 			"resume_file_name": filename,
 			"resume_ready":     true,
+			"resume_source" : "uploaded",
 		})
 
-	c.JSON(http.StatusOK, gin.H{"resume_file_name": filename})
+	c.JSON(http.StatusOK, gin.H{
+		"resume_file_name": filename,
+		"resume_source":    "uploaded",
+		"message":          "resume uploaded successfully",
+	})
 }
 
 func DownloadResume(c *gin.Context) {
@@ -183,19 +190,19 @@ func DownloadResume(c *gin.Context) {
 	if storagePath == "" {
 		storagePath = "./storage"
 	}
-	filePath := filepath.Join(storagePath, "gen_resumes", student.ResumeFileName)
+	filePath := filepath.Join(storagePath, "resumes", student.ResumeFileName)
 
-	// Check file exists on disk
-	if _, err := os.Stat(filePath); err != nil {
-		if os.IsNotExist(err) {
-			c.JSON(http.StatusNotFound, gin.H{
-				"error": "generated resume file does not exist",
-				"path":  filePath,
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		log.Printf("DownloadResume: file not found at %s", filePath)
+		config.DB.Model(&models.Student{}).
+			Where("id = ?", student.ID).
+			Updates(map[string]interface{}{
+				"resume_ready":     false,
+				"resume_file_name": "",
+				"resume_source":    "",
 			})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "resume file missing on disk — please regenerate",
 		})
 		return
 	}
@@ -220,7 +227,10 @@ func GenerateResume(c *gin.Context) {
 
 	config.DB.Model(&models.Student{}).
 		Where("id = ?", callerID).
-		Update("resume_ready", false)
+		Updates(map[string]interface{}{
+            "resume_ready":  false,
+            "resume_source": "generating",
+        })
 
 	if err := pushResumeTask(callerID.(uint)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{

@@ -65,6 +65,7 @@ def _mark_ready(user_id: int, filename: str) -> None:
             UPDATE students
                SET resume_ready      = true,
                    resume_file_name  = %s,
+                   resume_source    = 'generated',
                    updated_at        = NOW()
              WHERE id = %s
             """,
@@ -174,7 +175,7 @@ def generate_resume(task: dict) -> None:
     out_dir  = os.path.join(STORAGE_PATH, 'gen_resumes')
     os.makedirs(out_dir, exist_ok=True)
 
-    filename = f'resume_{user_id}.pdf'
+    filename = f'generated_resume_{user_id}.pdf'
     out_path = os.path.join(out_dir, filename)
 
     log.info("Generating PDF at: %s", out_path)

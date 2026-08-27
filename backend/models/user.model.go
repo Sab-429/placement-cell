@@ -24,6 +24,7 @@ type Student struct {
 	PFPFileName    string      `                               json:"pfp_file_name"`
 	ResumeFileName string      `                               json:"resume_file_name"`
 	ResumeReady    bool        `gorm:"default:false"           json:"resume_ready"`
+	ResumeSource   string      `gorm:"default:false            json:"resume_source"`
 	Domains      datatypes.JSON 		`gorm:"type:jsonb" 	  json:"domains"`
 	WorkExperience datatypes.JSON       `gorm:"type:jsonb"    json:"work_experience"`
 	Projects       datatypes.JSON       `gorm:"type:jsonb"    json:"projects"`

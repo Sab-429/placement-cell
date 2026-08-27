@@ -9,8 +9,6 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Briefcase, CheckCircle, XCircle, Clock, Star, ArrowRight, Download, RefreshCw, Bell } from 'lucide-react'
 import Navbar from '@/components/Navbar'
 
-const REFRESH_INTERVAL = 30_000
-
 export default function StudentDashboard() {
    const { userId } = useAuthStore()
    const [profile, setProfile] = useState(null)
@@ -67,12 +65,15 @@ export default function StudentDashboard() {
    }, [fetchData])
 
    useEffect(() => {
-      const interval = setInterval(() => {
-        fetchData(true) // silent = true means no loading spinner
-      }, REFRESH_INTERVAL)
-  
-      return () => clearInterval(interval) // cleanup on unmount
-    }, [fetchData])
+      let active = true
+      
+      const run = async () => {
+        if(active) await fetchData(false)
+      }
+
+      run()
+      return () => {active = false}
+    }, [userId])
 
 
    const handleGenerate = async () => {
@@ -142,7 +143,7 @@ export default function StudentDashboard() {
 
             <div className="flex gap-3 flex-wrap">
               {profile?.resume_ready && (
-                <a href={`/files/resumes/${profile.resume_file_name}`} download>
+                <a href={`/files/gen_resumes/${profile.resume_file_name}`} download>
                   <button className="flex items-center gap-2 bg-white text-gray-900
                                      px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100">
                     <Download className="w-4 h-4" /> Resume
