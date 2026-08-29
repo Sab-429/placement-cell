@@ -28,8 +28,8 @@ func SetUpRoutes(r *gin.Engine) {
 		c.JSON(http.StatusOk, gin.H{
 			"status" : "ok",
 			"service": "placement-api",
-		}
-	}
+		})
+	})
 
 	api.GET("/health/ready", func(c *gin.Context) {
 		sqlDB, err := config.DB.DB()
@@ -48,7 +48,7 @@ func SetUpRoutes(r *gin.Engine) {
 			return
 		}
 		 c.JSON(http.StatusOK, gin.H{"status": "ready"})
-	}
+	})
 	//----student route
 	student := api.Group("/student", middlewares.Auth("student"))
 	{
