@@ -23,7 +23,32 @@ func SetUpRoutes(r *gin.Engine) {
 	api.GET("/listings/:id", controllers.GetOneListing)
 	api.GET("/recruiters",  controllers.GetAllRecruiter)
 	api.GET("/recruiters/:id", controllers.GetRecruiterProfile)
+	
+	api.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOk, gin.H{
+			"status" : "ok",
+			"service": "placement-api",
+		}
+	}
 
+	api.GET("/health/ready", func(c *gin.Context) {
+		sqlDB, err := config.DB.DB()
+		if err != nil {
+			c.JSON(http.StatusServiceUnavailable, gin.H {
+				"status" : "not ready",
+				"error" : "cannot get DB instance",
+			})
+			return
+		}
+		if err := sqlDB.Ping(); err != nil {
+			c.JSON(http.StatusServiceUnavailable, gin.H {
+				"status": "not ready",
+            			"error":  "DB ping failed: " + err.Error(),
+			})
+			return
+		}
+		 c.JSON(http.StatusOK, gin.H{"status": "ready"})
+	}
 	//----student route
 	student := api.Group("/student", middlewares.Auth("student"))
 	{
