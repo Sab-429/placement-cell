@@ -154,7 +154,7 @@ function ItemList({ items, onRemove, renderItem }) {
           <button
             type="button"
             onClick={() => onRemove(i)}
-            className="text-gray-300 hover:text-red-500 transition-colors mt-0.5 flex-shrink-0"
+            className="text-gray-300 hover:text-red-500 transition-colors mt-0.5 shrink-0"
           >
             <X className="w-4 h-4" />
           </button>
@@ -744,7 +744,7 @@ export default function StudentProfile() {
                 {profile?.resume_source === "uploaded" &&
                   profile?.resume_ready && (
                     <p className="text-xs text-blue-600 mt-2 text-center">
-                      ✓ Currently using uploaded resume
+                      Currently using uploaded resume
                     </p>
                   )}
               </div>
@@ -796,13 +796,13 @@ export default function StudentProfile() {
                 {profile?.resume_source === "generated" &&
                   profile?.resume_ready && (
                     <p className="text-xs text-purple-600 mt-2 text-center">
-                      ✓ Currently using generated resume
+                       Currently using generated resume
                     </p>
                   )}
 
                 {profile?.resume_source === "generating" && (
                   <p className="text-xs text-amber-600 mt-2 text-center">
-                    ⏳ Generating — you will get an email when ready
+                     Generating — you will get an email when ready
                   </p>
                 )}
               </div>
@@ -855,7 +855,7 @@ export default function StudentProfile() {
                   setDomains([...domains, d]);
                   setDomainInput("");
                 }}
-                className="px-4 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 flex-shrink-0"
+                className="px-4 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 shrink-0"
               >
                 <Plus className="w-4 h-4" />
               </button>

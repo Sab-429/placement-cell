@@ -1,8 +1,10 @@
 package routes
 
 import (
+	"backend/config"
 	"backend/controllers"
 	"backend/middlewares"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -25,7 +27,7 @@ func SetUpRoutes(r *gin.Engine) {
 	api.GET("/recruiters/:id", controllers.GetRecruiterProfile)
 	
 	api.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOk, gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"status" : "ok",
 			"service": "placement-api",
 		})
