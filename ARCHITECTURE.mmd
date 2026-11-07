@@ -1,0 +1,86 @@
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#0066cc', 'primaryTextColor': '#fff', 'primaryBorderColor': '#004c99', 'lineColor': '#0066cc', 'secondaryColor': '#0066cc', 'tertiaryColor': '#fff'}}}%%
+
+flowchart TD
+    %% External actors
+    User((Student / Recruiter / Admin)):::actor
+
+    %% Frontend tier
+    subgraph FE ["Frontend (React SPA + Nginx)"]
+        direction LR
+        Browser[Browser]
+        Nginx[Nginx :80<br/>Static SPA + /api proxy]
+        Router[React Router 7<br/>ProtectedRoute]
+        Store[zustand authStore<br/>token in localStorage]
+        Axios[axios client<br/>baseURL /api + Bearer token]
+    end
+
+    %% API tier
+    subgraph API ["Go API (Gin) :8080"]
+        direction TB
+        Gin[Gin HTTP Router<br/>/api]
+        CORS[CORS Middleware]
+        AuthMW[Auth Middleware<br/>JWT verify + role check]
+        Controllers[Controllers<br/>auth, student, recruiter,<br/>admin, listing, application]
+        JWT[JWT utils<br/>HS256 sign / parse<br/>bcrypt compare]
+        Queue[Redis Queue Client<br/>LPush tasks:worker]
+        Storage[Local Storage<br/>pfps/ resumes/ logos/]
+    end
+
+    %% Data tier
+    subgraph DB ["Data Tier (Docker internal network)"]
+        direction TB
+        Postgres[(PostgreSQL 16<br/>placement DB<br/>GORM AutoMigrate)]
+        Redis[(Redis 7<br/>task queue list<br/>tasks:worker)]
+    end
+
+    %% Worker tier
+    subgraph WK ["Python Background Worker"]
+        direction TB
+        Worker[Worker main loop<br/>BRPop tasks:worker<br/>5s blocking pop]
+        Tasks[Task Handlers<br/>gen_resume<br/>send_email<br/>notify_*]
+        Resend[Resend API<br/>Transactional email]
+    end
+
+    %% External services
+    External[Resend Email Service]:::external
+
+    %% Relationships — User → Frontend
+    User -->|HTTPS/HTTP| Browser
+    Browser -->|static assets| Nginx
+    Browser -->|SPA routes| Router
+    Router -->|token state| Store
+    Store -->|Authorization header| Axios
+
+    %% Frontend → API
+    Axios -->|GET/POST/PUT/DELETE /api| Nginx
+    Nginx -->|proxy /api → api:8080| Gin
+
+    %% API internal flow
+    Gin --> CORS
+    CORS --> AuthMW
+    AuthMW -->|valid JWT| Controllers
+    AuthMW -->|invalid/expired| Axios:::err
+    Controllers -->|read/write| Postgres
+    Controllers -->|issue / verify token| JWT
+    Controllers -->|enqueue task| Queue
+    Controllers -->|save / serve files| Storage
+    Queue -->|LPush| Redis
+
+    %% Worker flow
+    Redis -->|BRPop| Worker
+    Worker -->|dispatch| Tasks
+    Tasks -->|generate PDF → shared storage| Storage
+    Tasks -->|send email via| Resend
+    Resend --> External
+
+    %% API health / readiness
+    Gin -.->|/api/health &<br/>/api/health/ready| Postgres
+
+    %% Styling classes
+    classDef actor fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef external fill:#e1f5e1,stroke:#2e7d32,stroke-width:2px;
+    classDef err fill:#ffcdd2,stroke:#c62828,stroke-width:2px;
+
+    %% Note
+    note1[Note: Nginx also proxies /files →<br/>api:8080 for resume downloads]
+    note1 -.-> Nginx
