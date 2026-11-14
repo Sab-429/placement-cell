@@ -60,3 +60,21 @@ docker-compose.override.yml
 # ── Logs ──────────────────────────────────────────────────────────────
 *.log
 logs/
+
+# ── Secrets & sensitive data (never commit to GitHub) ───────────────
+# (.env* and storage/ are ignored in the sections above.)
+
+# Kubernetes secrets (secrets.yaml.template already contains real credentials)
+k8s/secrets.yaml
+k8s/secrets.yaml.*
+k8s/*secrets*
+
+# Standalone binaries / CLI tools (not source code)
+kind
+
+# Cryptographic material & cloud service-account keys
+*.pem
+*.key
+*.crt
+id_rsa*
+service-account*.json

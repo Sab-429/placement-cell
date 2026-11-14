@@ -1,0 +1,89 @@
+# ╔═════════════════════════════════════════════════════════════════════════════╗
+# ║  NOTICE: You are using an EXTERNAL/LOCAL PostgreSQL, NOT running Postgres ║
+# ║  inside Kubernetes. DO NOT apply this file.                               ║
+# ║                                                                           ║
+# ║  The API connects to your external Postgres via:                          ║
+# ║    DB_HOST=postgres   DB_PORT=5432   DB_USER=portal   DB_NAME=placement   ║
+# ║                                                                           ║
+# ║  Make sure "postgres" resolves from inside the K8s pod (e.g. add a        ║
+# ║  hostAlias to the API deployment, or use the EC2's private IP).           ║
+# ╚═════════════════════════════════════════════════════════════════════════════╝
+
+# This file is kept for reference only. Do NOT run: kubectl apply -f k8s/postgres.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: placement
+spec:
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+  type: ClusterIP
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: placement
+spec:
+  serviceName: postgres-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          env:
+            - name: POSTGRES_USER
+              value: "portal"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: placement-secrets
+                  key: DB_PASSWORD
+            - name: POSTGRES_DB
+              value: "placement"
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: pg-data
+              mountPath: /var/lib/postgresql/data
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      volumes:
+        - name: pg-data
+          emptyDir: {}
+          # For production, replace emptyDir with a PVC:
+          # persistentVolumeClaim:
+          #   claimName: postgres-pvc
+---
+# Uncomment below for production persistent storage (EBS)
+# ---
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: postgres-pvc
+#   namespace: placement
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   storageClassName: ebs-sc
+#   resources:
+#     requests:
+#       storage: 20Gi

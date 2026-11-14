@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: placement-config
+  namespace: placement
+data:
+  # ── App ─────────────────────────────────────────────────────────────
+  APP_ENV: "production"
+  PORT: "8080"
+  FRONTEND_URL: "https://sabyasachisaha.portal.in"
+  APP_URL: "https://sabyasachisaha.portal.in"
+
+  # ── Database ────────────────────────────────────────────────────────
+  DB_HOST: "postgres-service"
+  DB_PORT: "5432"
+  DB_USER: "portal"
+  DB_NAME: "placement"
+  DB_SSLMODE: "disable"
+
+  # ── Redis ───────────────────────────────────────────────────────────
+  REDIS_URL: "redis://redis-service:6379/0"
+
+  # ── JWT ─────────────────────────────────────────────────────────────
+  JWT_EXPIRY_HOURS: "72"
+
+  # ── Storage (container path, shared via EFS) ────────────────────────
+  STORAGE_PATH: "/app/storage"
+
+  # ── Email ───────────────────────────────────────────────────────────
+  EMAIL_FROM: "Auth <auth@sabyasachisaha.portal.in>"

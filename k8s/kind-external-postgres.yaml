@@ -1,0 +1,32 @@
+# ╔═════════════════════════════════════════════════════════════════════════════╗
+# ║  EXTERNAL PostgreSQL for Kind on EC2                                      ║
+# ║  Points K8s Service "postgres-service" to your EC2's PostgreSQL           ║
+# ║                                                                           ║
+# ║  REQUIRED: Replace <EC2_PRIVATE_IP> with your EC2's actual private IP.    ║
+# ║  Get it on your EC2 with: curl -s http://169.254.169.254/latest/meta-data/local-ipv4
+# ╚═════════════════════════════════════════════════════════════════════════════╝
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: placement
+spec:
+  selector:
+    app: external-postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: postgres-service
+  namespace: placement
+subsets:
+  - addresses:
+      - ip: "<EC2_PRIVATE_IP>"   # <-- REPLACE WITH YOUR EC2 PRIVATE IP
+    ports:
+      - port: 5432

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: placement
+---
+# StorageClass removed — not needed for single-EC2 deployment with external PostgreSQL.
+# Storage uses hostPath at /var/lib/placement/storage on the EC2 host.

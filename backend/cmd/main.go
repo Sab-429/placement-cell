@@ -6,16 +6,21 @@ import (
 	"backend/middlewares"
 	"backend/routes"
 	"log"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
 func main() {
-	if err := godotenv.Load("../.env.global"); err != nil {
-		log.Println("failed to load ../.env.global:", err)
-	} else {
-		log.Println("loaded ../.env.global successfully")
+	// .env.global is not mounted inside the container — env vars are injected
+	// via Kubernetes ConfigMap and Secrets. Skip godotenv in production.
+	if os.Getenv("APP_ENV") != "production" {
+		if err := godotenv.Load("../.env.global"); err != nil {
+			log.Println("failed to load ../.env.global:", err)
+		} else {
+			log.Println("loaded ../.env.global successfully")
+		}
 	}
 	config.ConnectDB()
 
