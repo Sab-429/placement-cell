@@ -22,6 +22,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -35,15 +37,9 @@ jobs:
         run: |
           echo "account_id=$(aws sts get-caller-identity --query Account --output text)" >> $GITHUB_OUTPUT
 
-      - name: Download image tag artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: image-tag
-          path: /tmp
-
-      - name: Set IMAGE_TAG from artifact
+      - name: Set IMAGE_TAG from workflow run SHA
         run: |
-          IMAGE_TAG=$(cat /tmp/image-tag.txt)
+          IMAGE_TAG=$(git rev-parse --short ${{ github.event.workflow_run.head_sha }})
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
           echo "Using image tag: $IMAGE_TAG"
 
