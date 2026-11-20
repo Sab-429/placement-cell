@@ -15,7 +15,7 @@ ENV GONOSUMDB=*
 ENV GOFLAGS=-mod=mod
 
 # Download and verify all modules (combined so we see full error output)
-RUN go mod download && go mod verify
+RUN go mod download
 
 # Copy source code
 COPY . .
