@@ -8,7 +8,11 @@ WORKDIR /app
 
 # Cache Go module downloads
 COPY go.mod go.sum ./
-RUN go mod download
+# Use Go module proxy and skip checksum DB for CI compatibility
+ENV GOPROXY=https://proxy.golang.org,direct
+ENV GONOSUMDB=*
+ENV GOFLAGS=-mod=mod
+RUN go mod download && go mod verify
 
 # Copy source and build
 COPY . .
