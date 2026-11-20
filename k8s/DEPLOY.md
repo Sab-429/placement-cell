@@ -4,13 +4,13 @@ This guide walks you through deploying the Placement Portal on a single AWS EC2 
 running Kubernetes (K3s), connecting to an external/local PostgreSQL database
 (installed on the same EC2 or reachable at host `postgres`).
 
-Your Docker Hub images are already built:
-- zorochuro1234/placement-backend:localv2  -> API
-- zorochuro1234/placement-worker:localv1   -> Worker
-- zorochuro1234/placement-frontend:localv2 -> Frontend
+Your ECR images are built and pushed by GitHub Actions CI:
+- ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/placement-backend:<IMAGE_TAG>  -> API
+- ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/placement-worker:<IMAGE_TAG>   -> Worker
+- ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/placement-frontend:<IMAGE_TAG> -> Frontend
 
 Your domain: https://sabyasachisaha.portal.in
-Your DB: host=postgres, port=5432, user=portal, password=Sabya@#429, dbname=placement
+Your DB: host=postgres, port=5432, user=portal, password=<your-db-password>, dbname=placement
 
 ## Prerequisites
 
@@ -37,7 +37,7 @@ sudo systemctl start postgresql
 sudo systemctl enable postgresql
 
 # Create the database and user
-sudo -u postgres psql -c "CREATE USER portal WITH PASSWORD 'Sabya@#429';"
+sudo -u postgres psql -c "CREATE USER portal WITH PASSWORD '<your-db-password>';"
 sudo -u postgres psql -c "CREATE DATABASE placement OWNER portal;"
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE placement TO portal;"
 
@@ -65,9 +65,9 @@ sudo cat /etc/rancher/k3s/k3s.yaml
 cp k8s/secrets.yaml.template k8s/secrets.yaml
 
 # Edit k8s/secrets.yaml and confirm:
-#   DB_PASSWORD: "Sabya@#429"
+#   DB_PASSWORD: <your-db-password>
 #   JWT_SECRET: <generate with: openssl rand -base64 32>
-#   RESEND_API_KEY: your Resend API key
+#   RESEND_API_KEY: <your-resend-api-key>
 
 kubectl apply -f k8s/secrets.yaml
 ```
@@ -191,12 +191,12 @@ kubectl exec -it deployment/api -n placement -- ping -c 3 postgres
 /mnt/c/Users/sabya/Hackathon/k8s/
   namespace.yaml          # K8s namespace
   configmap.yaml          # DB_HOST=postgres, DB_USER=portal, DB_NAME=placement, etc.
-  secrets.yaml.template   # Copy to secrets.yaml with DB_PASSWORD=Sabya@#429
+  secrets.yaml.template   # Copy to secrets.yaml with your DB_PASSWORD
   postgres.yaml           # DO NOT APPLY — external PostgreSQL only
   redis.yaml              # Redis for job queue
-  api.yaml                # Backend API (zorochuro1234/placement-backend:localv2)
-  worker.yaml             # Worker (zorochuro1234/placement-worker:localv1)
-  frontend.yaml           # Frontend (zorochuro1234/placement-frontend:localv2)
+  api.yaml                # Backend API (ECR image, tag set by CI/CD)
+  worker.yaml             # Worker (ECR image, tag set by CI/CD)
+  frontend.yaml           # Frontend (ECR image, tag set by CI/CD)
   ingress.yaml            # ALB ingress for sabyasachisaha.portal.in
   DEPLOY.md               # This guide
 ```

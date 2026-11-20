@@ -4,13 +4,13 @@ This guide walks you through deploying the Placement Portal on **AWS EC2 Ubuntu*
 using **Kind** (Kubernetes IN Docker) and **kubectl**, connecting to an
 **external PostgreSQL** installed on the same EC2.
 
-Your Docker Hub images:
-- zorochuro1234/placement-backend:localv2  → API
-- zorochuro1234/placement-worker:localv1   → Worker
-- zorochuro1234/placement-frontend:localv2 → Frontend
+Your ECR images are built and pushed by GitHub Actions CI:
+- ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/placement-backend:<IMAGE_TAG>  → API
+- ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/placement-worker:<IMAGE_TAG>   → Worker
+- ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/placement-frontend:<IMAGE_TAG> → Frontend
 
 Your domain: **https://sabyasachisaha.portal.in**
-Your DB: host=postgres-service (K8s), port=5432, user=portal, password=Sabya@#429, dbname=placement
+Your DB: host=postgres-service (K8s), port=5432, user=portal, password=<your-db-password>, dbname=placement
 
 ---
 
@@ -63,7 +63,7 @@ sudo systemctl start postgresql
 sudo systemctl enable postgresql
 
 # Create database and user
-sudo -u postgres psql -c "CREATE USER portal WITH PASSWORD 'Sabya@#429';"
+sudo -u postgres psql -c "CREATE USER portal WITH PASSWORD '<your-db-password>';"
 sudo -u postgres psql -c "CREATE DATABASE placement OWNER portal;"
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE placement TO portal;"
 
@@ -133,9 +133,9 @@ nano k8s/secrets.yaml
 Fill in:
 ```yaml
 stringData:
-  DB_PASSWORD: "Sabya@#429"
+  DB_PASSWORD: "<your-db-password>"
   JWT_SECRET: "<generate with: openssl rand -base64 32>"
-  RESEND_API_KEY: "re_<your-actual-resend-key>"
+  RESEND_API_KEY: "<your-resend-api-key>"
 ```
 
 Then apply:

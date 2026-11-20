@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: zorochuro1234/frontend:latest
+          image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/placement-frontend:${IMAGE_TAG}
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
