@@ -8,14 +8,19 @@ WORKDIR /app
 
 # Cache Go module downloads
 COPY go.mod go.sum ./
-# Use Go module proxy and skip checksum DB for CI compatibility
+
+# Configure Go module proxy for CI compatibility
 ENV GOPROXY=https://proxy.golang.org,direct
 ENV GONOSUMDB=*
 ENV GOFLAGS=-mod=mod
+
+# Download and verify all modules (combined so we see full error output)
 RUN go mod download && go mod verify
 
-# Copy source and build
+# Copy source code
 COPY . .
+
+# Build the binary
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o server ./cmd/main.go
 
 # ── Stage 2: Minimal runtime image ─────────────────────────────────────
