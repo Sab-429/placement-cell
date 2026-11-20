@@ -1,14 +1,14 @@
-name: CD — Deploy to Kubernetes
+name: CD - Deploy to Kubernetes
 
 on:
   workflow_run:
-    workflows: ["CI — Build & Push to Amazon ECR"]
+    workflows: ["CI - Build & Push to Amazon ECR"]
     branches: [main]
     types:
       - completed
 
 env:
-  AWS_REGION: us-east-1
+  AWS_REGION: ap-south-1
   CLUSTER_NAME: placement
   NAMESPACE: placement
 
@@ -27,11 +27,13 @@ jobs:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assign: ${{ secrets.AWS_IAM_ROLE_ARN }}
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
-          # If you prefer static keys instead of OIDC, uncomment below:
-          # aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          # aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Get AWS Account ID
+        id: account
+        run: |
+          echo "account_id=$(aws sts get-caller-identity --query Account --output text)" >> $GITHUB_OUTPUT
 
       - name: Download image tag artifact
         uses: actions/download-artifact@v4
@@ -41,7 +43,7 @@ jobs:
 
       - name: Set IMAGE_TAG from artifact
         run: |
-          IMAGE_TAG=$(cat /tmp/image-tag.txt | head -1 | sed 's/.*://')
+          IMAGE_TAG=$(cat /tmp/image-tag.txt)
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
           echo "Using image tag: $IMAGE_TAG"
 
@@ -51,8 +53,13 @@ jobs:
           chmod +x kubectl
           sudo mv kubectl /usr/local/bin/
 
+      - name: Install envsubst
+        run: |
+          sudo apt-get update -y && sudo apt-get install -y gettext-base
+
       - name: Set up kubeconfig
         run: |
+          mkdir -p $HOME/.kube
           echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 -d > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
           kubectl cluster-info
@@ -62,15 +69,24 @@ jobs:
           aws ecr get-authorization-token --region ${{ env.AWS_REGION }} --output text \
             --query 'authorizationData[].authorizationToken' | head -1 | base64 -d | cut -d: -f2 > /tmp/ecr-password.txt
           kubectl create secret docker-registry ecr-registry-secret \
-            --docker-server=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com \
+            --docker-server=${{ steps.account.outputs.account_id }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com \
             --docker-username=AWS \
             --docker-password="$(cat /tmp/ecr-password.txt)" \
             --namespace=${{ env.NAMESPACE }} \
             --dry-run=client -o yaml | kubectl apply -f -
 
-      - name: Apply Kubernetes manifests
+      - name: Substitute env vars in K8s manifests
         run: |
-          # Apply namespace, configmap, and infrastructure first
+          export AWS_ACCOUNT_ID=${{ steps.account.outputs.account_id }}
+          export AWS_REGION=${{ env.AWS_REGION }}
+          export IMAGE_TAG=${{ env.IMAGE_TAG }}
+          for f in k8s/api.yaml k8s/worker.yaml k8s/frontend.yaml; do
+            envsubst < "$f" > "/tmp/$(basename $f)"
+            kubectl apply -f "/tmp/$(basename $f)"
+          done
+
+      - name: Apply remaining K8s manifests
+        run: |
           kubectl apply -f k8s/namespace.yaml
           kubectl apply -f k8s/configmap.yaml
 
@@ -82,19 +98,8 @@ jobs:
             --namespace=${{ env.NAMESPACE }} \
             --dry-run=client -o yaml | kubectl apply -f -
 
-          # Apply applications
           kubectl apply -f k8s/redis.yaml
-          kubectl apply -f k8s/api.yaml
-          kubectl apply -f k8s/worker.yaml
-          kubectl apply -f k8s/frontend.yaml
           kubectl apply -f k8s/ingress.yaml
-
-      - name: Update image tags to ECR
-        run: |
-          ECR_REGISTRY="${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com"
-          kubectl set image deployment/api api="${ECR_REGISTRY}/placement-backend:${{ env.IMAGE_TAG }}" -n ${{ env.NAMESPACE }}
-          kubectl set image deployment/worker worker="${ECR_REGISTRY}/placement-worker:${{ env.IMAGE_TAG }}" -n ${{ env.NAMESPACE }}
-          kubectl set image deployment/frontend frontend="${ECR_REGISTRY}/placement-frontend:${{ env.IMAGE_TAG }}" -n ${{ env.NAMESPACE }}
 
       - name: Rollout status
         run: |

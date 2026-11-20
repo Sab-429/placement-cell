@@ -1,4 +1,4 @@
-name: CI — Build & Push to Amazon ECR
+name: CI - Build & Push to Amazon ECR
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 env:
-  AWS_REGION:  ap-south-1           
+  AWS_REGION: ap-south-1
   ECR_REPOSITORY_BACKEND: placement-backend
   ECR_REPOSITORY_WORKER: placement-worker
   ECR_REPOSITORY_FRONTEND: placement-frontend
@@ -16,79 +16,94 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     permissions:
-      id-token: write      # needed for OIDC / IRSA authentication
+      id-token: write
       contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Only configure AWS and push on push to main, not on PRs
       - name: Configure AWS credentials (OIDC)
         if: github.event_name == 'push'
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_IAM_ROLE_ARN }}
-          aws-region: ap-south-1
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
+        if: github.event_name == 'push'
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Extract Docker metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_BACKEND }}
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_WORKER }}
-            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_FRONTEND }}
-          tags: |
-            type=sha
-            type=ref,event=branch
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # Extract short git SHA for consistent image tagging across all 3 services
+      - name: Get short git SHA
+        id: vars
+        run: |
+          echo "sha_short=$(git rev-parse --short $GITHUB_SHA)" >> $GITHUB_OUTPUT
+
       - name: Build & push Backend image
+        if: github.event_name == 'push'
         uses: docker/build-push-action@v6
         with:
           context: ./backend
           file: ./backend/Dockerfile
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_BACKEND }}:${{ steps.vars.outputs.sha_short }}
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_BACKEND }}:latest
+          labels: |
+            org.opencontainers.image.source=${{ github.event.repository.html_url }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ steps.vars.outputs.sha_short }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Build & push Worker image
+        if: github.event_name == 'push'
         uses: docker/build-push-action@v6
         with:
           context: ./worker
           file: ./worker/Dockerfile
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_WORKER }}:${{ steps.vars.outputs.sha_short }}
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_WORKER }}:latest
+          labels: |
+            org.opencontainers.image.source=${{ github.event.repository.html_url }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ steps.vars.outputs.sha_short }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Build & push Frontend image
+        if: github.event_name == 'push'
         uses: docker/build-push-action@v6
         with:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_FRONTEND }}:${{ steps.vars.outputs.sha_short }}
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_FRONTEND }}:latest
+          labels: |
+            org.opencontainers.image.source=${{ github.event.repository.html_url }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ steps.vars.outputs.sha_short }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Write image tag to file (for CD workflow)
+        if: github.event_name == 'push'
         run: |
-          echo "${{ steps.meta.outputs.tags }}" > /tmp/image-tag.txt
-          echo "IMAGE_TAG=$(git rev-parse --short $GITHUB_SHA)" >> $GITHUB_ENV
+          echo "${{ steps.vars.outputs.sha_short }}" > /tmp/image-tag.txt
+          echo "IMAGE_TAG=${{ steps.vars.outputs.sha_short }}" >> $GITHUB_ENV
 
       - name: Upload image tag artifact
+        if: github.event_name == 'push'
         uses: actions/upload-artifact@v4
         with:
           name: image-tag
