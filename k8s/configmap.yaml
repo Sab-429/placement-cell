@@ -10,12 +10,12 @@ data:
   FRONTEND_URL: "https://sabyasachisaha.portal.in"
   APP_URL: "https://sabyasachisaha.portal.in"
 
-  # ── Database ────────────────────────────────────────────────────────
-  DB_HOST: "postgres-service"
+  # ── Database (Neon PostgreSQL) ──────────────────────────────────────
+  DB_HOST: "<neon-endpoint>.aws.neon.tech"
   DB_PORT: "5432"
-  DB_USER: "portal"
-  DB_NAME: "placement"
-  DB_SSLMODE: "disable"
+  DB_USER: "<neon-user>"
+  DB_NAME: "<neon-db>"
+  DB_SSLMODE: "require"
 
   # ── Redis ───────────────────────────────────────────────────────────
   REDIS_URL: "redis://redis-service:6379/0"

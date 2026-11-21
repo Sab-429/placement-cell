@@ -78,7 +78,6 @@ jobs:
           export AWS_ACCOUNT_ID=${{ steps.account.outputs.account_id }}
           export AWS_REGION=${{ env.AWS_REGION }}
           export IMAGE_TAG=${{ env.IMAGE_TAG }}
-          export EC2_PRIVATE_IP=${{ secrets.EC2_PRIVATE_IP }}
           for f in k8s/api.yaml k8s/worker.yaml k8s/frontend.yaml; do
             envsubst < "$f" > "/tmp/$(basename $f)"
             kubectl apply -f "/tmp/$(basename $f)"
