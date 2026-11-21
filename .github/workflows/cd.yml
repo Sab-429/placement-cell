@@ -53,12 +53,10 @@ jobs:
         run: |
           sudo apt-get update -y && sudo apt-get install -y gettext-base
 
-      - name: Set up kubeconfig
-        run: |
-          mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 -d > $HOME/.kube/config
-          chmod 600 $HOME/.kube/config
-          kubectl cluster-info
+      - name: Create kind cluster
+        run: kind create cluster --name placement
+      - name: Export kubeconfig
+        run: kind export kubeconfig --name placement
 
       - name: Apply namespace first
         run: |
