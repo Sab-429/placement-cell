@@ -13,6 +13,8 @@ spec:
       labels:
         app: api
     spec:
+      imagePullSecrets:
+        - name: ecr-registry-secret
       containers:
         - name: api
           image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/placement-backend:${IMAGE_TAG}
