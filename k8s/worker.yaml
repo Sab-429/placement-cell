@@ -27,26 +27,6 @@ spec:
           volumeMounts:
             - name: storage
               mountPath: /app/storage
-          livenessProbe:
-            exec:
-              command:
-                - python
-                - -c
-                - "import redis,os; redis.from_url(os.getenv('REDIS_URL','redis://redis-service:6379/0')).ping()"
-            initialDelaySeconds: 15
-            periodSeconds: 30
-            timeoutSeconds: 5
-            failureThreshold: 3
-          readinessProbe:
-            exec:
-              command:
-                - python
-                - -c
-                - "import redis,os; redis.from_url(os.getenv('REDIS_URL','redis://redis-service:6379/0')).ping()"
-            initialDelaySeconds: 10
-            periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 3
           resources:
             requests:
               memory: "512Mi"
