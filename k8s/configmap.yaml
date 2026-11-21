@@ -11,10 +11,10 @@ data:
   APP_URL: "https://sabyasachisaha.portal.in"
 
   # ── Database (Neon PostgreSQL) ──────────────────────────────────────
-  DB_HOST: "<neon-endpoint>.aws.neon.tech"
+  DB_HOST: "ep-wispy-unit-bdvha26j-pooler.c-8.us-east-2.aws.neon.tech"
   DB_PORT: "5432"
-  DB_USER: "<neon-user>"
-  DB_NAME: "<neon-db>"
+  DB_USER: "neondb_owner"
+  DB_NAME: "neondb"
   DB_SSLMODE: "require"
 
   # ── Redis ───────────────────────────────────────────────────────────
