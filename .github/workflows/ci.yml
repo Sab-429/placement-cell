@@ -136,9 +136,14 @@ jobs:
           sed -i 's/newTag: "IMAGE_TAG_PLACEHOLDER"/newTag: "${{ steps.vars.outputs.sha_short }}"/g' overlays/production/kustomization.yaml
 
           git add overlays/production/kustomization.yaml
-          git commit -m "Update image tags to ${{ steps.vars.outputs.sha_short }}"
 
-          git push origin main
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No changes to commit - image tag already up to date"
+          else
+            git commit -m "Update image tags to ${{ steps.vars.outputs.sha_short }}"
+            git push origin main
+          fi
 
       # ── Kubernetes: Create/update placement-secrets from GitHub Secrets ─────────
       - name: Install kubectl
