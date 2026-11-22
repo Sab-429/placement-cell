@@ -18,6 +18,7 @@ env:
   ECR_REPOSITORY_BACKEND: placement-backend
   ECR_REPOSITORY_WORKER: placement-worker
   ECR_REPOSITORY_FRONTEND: placement-frontend
+  GITOPS_REPO: https://github.com/Sab-429/placement-gitops.git
 
 jobs:
   build-and-push:
@@ -119,3 +120,21 @@ jobs:
           name: image-tag
           path: /tmp/image-tag.txt
           retention-days: 7
+
+      # ── GitOps: Update image tags in GitOps repository ─────────────────
+      - name: Update GitOps repo with new image tags
+        if: github.event_name == 'push'
+        run: |
+          git config --global user.name "${{ secrets.GITOPS_USER }}"
+          git config --global user.email "${{ secrets.GITOPS_USER_EMAIL }}"
+
+          git clone https://${{ secrets.GITOPS_PAT }}@github.com/Sab-429/placement-gitops.git /tmp/gitops-repo
+          cd /tmp/gitops-repo
+
+          # Update image tags in kustomization.yaml
+          sed -i 's/newTag: "IMAGE_TAG_PLACEHOLDER"/newTag: "${{ steps.vars.outputs.sha_short }}"/g' overlays/production/kustomization.yaml
+
+          git add overlays/production/kustomization.yaml
+          git commit -m "Update image tags to ${{ steps.vars.outputs.sha_short }}"
+
+          git push origin main
