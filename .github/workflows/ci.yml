@@ -125,10 +125,10 @@ jobs:
       - name: Update GitOps repo with new image tags
         if: github.event_name == 'push'
         run: |
+          rm -rf /tmp/gitops-repo
           git config --global user.name "${{ secrets.GITOPS_USER }}"
           git config --global user.email "${{ secrets.GITOPS_USER_EMAIL }}"
 
-          rm -rf /tmp/gitops-repo
           git clone https://${{ secrets.GITOPS_PAT }}@github.com/Sab-429/placement-gitops.git /tmp/gitops-repo
           cd /tmp/gitops-repo
 
@@ -144,23 +144,3 @@ jobs:
             git commit -m "Update image tags to ${{ steps.vars.outputs.sha_short }}"
             git push origin main
           fi
-
-      # ── Kubernetes: Create/update placement-secrets from GitHub Secrets ─────────
-      - name: Install kubectl
-        if: github.event_name == 'push'
-        run: |
-          which kubectl || (curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && chmod +x kubectl && sudo mv kubectl /usr/local/bin/)
-
-      - name: Export Kind kubeconfig
-        if: github.event_name == 'push'
-        run: kind export kubeconfig --name placement-cluster
-
-      - name: Create/update placement-secrets on cluster
-        if: github.event_name == 'push'
-        run: |
-          kubectl create secret generic placement-secrets \
-            --from-literal=DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
-            --from-literal=JWT_SECRET="${{ secrets.JWT_SECRET }}" \
-            --from-literal=RESEND_API_KEY="${{ secrets.RESEND_API_KEY }}" \
-            --namespace=placement \
-            --dry-run=client -o yaml | kubectl apply -f -
